@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="C8zXU5F1Jng8WvghiAWtjjhb01hId2cVPrenlQoyXx4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="protobuf,笔记">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="何谐写字的地方" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="protobuf是谷歌的数据交换协议，这是开发者文档的笔记">
+<meta name="keywords" content="protobuf,笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="“protobuf开发者文档笔记”">
+<meta property="og:url" content="http://hexiecs.com/2017/08/12/protobuf/index.html">
+<meta property="og:site_name" content="何谐写字的地方">
+<meta property="og:description" content="protobuf是谷歌的数据交换协议，这是开发者文档的笔记">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-06T15:34:24.416Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="“protobuf开发者文档笔记”">
+<meta name="twitter:description" content="protobuf是谷歌的数据交换协议，这是开发者文档的笔记">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'W2C23ZJQVQ',
+      apiKey: '26585c5135d90dd56d8adeb724cdd11d',
+      indexName: 'web',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://hexiecs.com/2017/08/12/protobuf/">
+
+
+
+
+
+  <title>“protobuf开发者文档笔记” | 何谐写字的地方</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-93991357-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3cff32fdcf8abffe8b4cfdc50715185e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何谐写字的地方</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术生活随笔</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2017/08/12/protobuf/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="何谐">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何谐写字的地方">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">“protobuf开发者文档笔记”</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-12T22:51:09+08:00">
+                2017-08-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/others/" itemprop="url" rel="index">
+                    <span itemprop="name">others</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4.2k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  22
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>protobuf是谷歌的数据交换协议，这是开发者文档的笔记</p>
+<a id="more"></a>
+
+<h1 id="开发者文档笔记"><a href="#开发者文档笔记" class="headerlink" title="开发者文档笔记"></a>开发者文档笔记</h1><ol>
+<li>protobuf向后兼容，增加新字段不影响旧的代码的解析过程，旧代码会忽略它</li>
+<li>每个字段后面的数字(tag)用来在序列化后的二进制中标识这个字段。在1-15的tag占用1个字节（wiretype占3位，最高有效位被占用），所以常用字段要设置较小的tag</li>
+<li>谨慎使用required，使用requied但是没有传值的话，可能message会被拒绝或扔掉，所以应该在应用层代码中自己校验完整性而不是使用required。</li>
+<li>Reserved field：当删除.proto文件中的某字段时，这个字段的tag number 又能被继续使用，但是当其他用户引入了旧版本的.proto文件，就可能引起tag number冲突，所以推荐在删除某字段时，把该field的tag number和name都设置为reserved field，这样别人想再次使用时，编译器会报错。</li>
+<li>Protocol buffer编译器会根据.proto文件生成get or set field value的函数，从一个输入流中parse 得到message 或把message序列化到输出流的函数。</li>
+<li>更新一个消息类型的准则. <ul>
+<li>不要改变已经存在的域的tag</li>
+<li>任何添加的新字段应该是optional或者repeated类型. </li>
+<li>Non-Required字段可以被去掉，只要tag number不要被reuse</li>
+<li>int32, uint32, int64, uint64, and bool are all compatible </li>
+<li>sint32 and sint64 are compatible</li>
+<li>Embedded Message和bytes可以转换</li>
+</ul>
+</li>
+<li>import definitions<br>当需要其它proto文件中的定义时，默认情况下import该文件，但不支持递归import。当把一个proto文件移到另一个位置时，不需要修改每一处对该proto文件的import，只需要在旧proto里用import public 指向新的位置，这样对旧proto的import就能依赖到新的proto。import文件的搜索路径由–proto_path标志指定</li>
+</ol>
+<h2 id="信息编码格式"><a href="#信息编码格式" class="headerlink" title="信息编码格式"></a>信息编码格式</h2><h3 id="基于128位varints编码"><a href="#基于128位varints编码" class="headerlink" title="基于128位varints编码"></a>基于128位varints编码</h3><ol>
+<li>Varints是一种用一个或更多字节序列化整数的方式</li>
+<li>Varints中的每个字节的最高有效位用来代表是否这个整数还有后续的字节，所以除了最后一个字节外，所有的字节的最高有效位都被设置。</li>
+<li>从一个varints编码得到原始整数的方法：<br>比如300的编码为1010 1100 0000 0010<br>两个字节分别为 10101100        00000010<br>都去掉最高有效位  0101100   0000010<br>因为varints是把最低有效的字节组（去掉最高有效位后的7个字节为一个字节组，用来表示整数的值）排在前面，所以这里需要翻转一下，变为：<br>00000100101100, 即300. </li>
+</ol>
+<h3 id="消息结构"><a href="#消息结构" class="headerlink" title="消息结构"></a>消息结构</h3><ol>
+<li>消息编码的时候，字段的field number（在.proto文件定义）和wire type(提供接下来的值所占长度的信息，比如wire type为0，代表这个值是int32类型，占4个字节，具体wire type的种类见<a href="https://developers.google.com/protocol-buffers/docs/encoding#structure)作为key，字段的值作为value，key+value一起存在编码后的数据中。Key是一个varints，按（filednumber" target="_blank" rel="noopener">https://developers.google.com/protocol-buffers/docs/encoding#structure)作为key，字段的值作为value，key+value一起存在编码后的数据中。Key是一个varints，按（filednumber</a>&lt;&lt;3|wire type）的方式存储，也就是说，key的最低三位就是wire type。</li>
+<li>有符号整数：当值为负数时，有符号整数(sint32,sin64)和int32，int64不同，当使用int32和int64时，编码后的varints为10字节长，它被对待成一个很大的无符号整数。当使用sint32和sint64时，结果varints使用zigzag编码，这更有效率。</li>
+<li>zigzag编码把有符号整数映射为无符号整数，使得有较小绝对值的数有较短的varints编码。<br>zigzag编码，每个n被映射为(n&lt;&lt;1)^(n&gt;&gt;31)，这里是算术右移（右移时填充符号位），所以对负数而言，（n&gt;&gt;31）时全1，对正数而言时全0.</li>
+<li>非varint数字类型：double和fixed64为64位，float和fixed32为32位</li>
+<li>String类型：value为字符串的长度后面跟着实际的字符串数据<br>嵌套消息:被当作和string一样来看待，tag+wire type 后面跟这个嵌套消息的字节数，然后跟嵌套消息的编码</li>
+<li>[packed = true]选项：使repeated字段更有效的编码. </li>
+</ol>
+<h2 id="编译器生成c-代码"><a href="#编译器生成c-代码" class="headerlink" title="编译器生成c++代码"></a>编译器生成c++代码</h2><ol>
+<li>使用‘—cpp_out=dir’参数调编译器，编译器会在dir生成c++代码。</li>
+<li>编译器会把.proto替换成.pb.h和.pb.c，比如：<br>protoc –proto_path=src –cpp_out=build/gen src/foo.proto src/bar/baz.proto<br>编译器会生成build/gen/foo.pb.h,build/gen/foo.pb.cc,build/gen/bar/foo.pb.h,build/gen/bar/foo.pb.cc这四个文件，编译器会自动创建/build/gen/bar目录，但不会自己创造/build回/build/gen这两个目录。</li>
+<li>package声明:如果.proto文件包含有package声明，文件的整个内容都会被放在相应的C++的命名空间中。</li>
+<li>对于一个message，编译器会生成一个相应的具象类，继承google:protobuf::Message类。这个类没有未实现的纯虚函数。Message类的非纯虚函数可能不会被该具象类实现，取决于优化模式。默认情况下，该具象类为了最大的速度实现了所有方法的特定版本。<br>如果.proto文件包含了这一行：option optimize_for = CODE_SIZE,该具象类会实现最小数量的必要的函数，其余的函数由基于反射来实现。这显著减少了生成代码的大小。<br>如果.proto文件包含：option optimize_for = LIFE_RUNTIME,具象类会包含所有方法的快速实现，但是实现的是google::protobuf::MessageLite接口，只包含Message方法的一个子集。尤其是，他不支持反射和描述符。然而，在这个模式下，生成的代码只需要连接libprotobuf-lite.so,而不是libprotobuf.so，这个lite库要小的多。</li>
+<li>Message接口定义了一些接口来检查，操作message，从一个流中parse或序列化到流。除此之外，Message还定义了一些其它的方法，比如<br>Foo(): Default constructor.<br>~Foo(): Default destructor.<br>Foo(const Foo&amp; other): Copy constructor.<br>Foo&amp; operator=(const Foo&amp; other): Assignment operator.<br>void Swap(Foo* other): Swap content with another message.<br>const UnknownFieldSet&amp; unknown_fields() const: Returns the set of unknown fields encountered while parsing this message.<br>UnknownFieldSet* mutable_unknown_fields(): Returns a pointer to the mutable set of unknown fields encountered while parsing this message.<br>static const Descriptor* descriptor(): Returns the type’s descriptor. This contains information about the type, including what fields it has and what their types are. This can be used with reflection to inspect fields programmatically.<br>static const Foo&amp; default_instance(): Returns a const singleton instance of Foo which is identical to a newly-constructed instance of Foo (so all singular fields are unset and all repeated fields are empty). Note that the default instance of a message can be used as a factory by calling its New() method.</li>
+<li>一个Message可以在另一个Message内部定义，比如：Message Foo｛Message Bar｛｝｝，在这个例子中，编译器会生成两个类：Foo和Foo_Bar，然后在Foo内生成一个typedef:<br>Typedef Foo_Bar Bar。在其它件文中如果想使用这个嵌套类型，需要使用：Foo_Bar<br>编译器对每个字段都会生成一个整数常量，以k开头,然后是字段的名字（驼峰命名），最后是FieldNumber,比如optional int32 foo_bar = 5，编译器会生成static const int kFooBarFieldNumber = 5。</li>
+<li>对于某个字段的const引用或指针，在下一次访问该字段的时候可能会失效。</li>
+<li>对于单个的整数字段（Singular Numeric Type），比如：<br>optional int32 foo = 1；<br>required int32 foo = 1；<br>编译器会生成：<br>bool has_foo() const: Returns true if the field is set.<br>int32 foo() const: Returns the current value of the field. If the field is not set, returns the default value.<br>void set_foo(int32 value): Sets the value of the field. After calling this, has_foo() will return true and foo() will return value.<br>void clear_foo(): Clears the value of the field. After calling this, has_foo() will return false and foo() will return the default value.  </li>
+<li>对于单独的string 字段，比如：<br>optional string foo = 1;<br>required string foo = 1;<br>optional bytes foo = 1;<br>required bytes foo = 1;<br>编译器会生成：bool has_foo() const: Returns true if the field is set.<br>const string&amp; foo() const: Returns the current value of the field. If the field is not set, returns the default value.<br>void set_foo(const string&amp; value): Sets the value of the field. After calling this, has_foo() will return true and foo() will return a copy of value.<br>void set_foo(const char* value): Sets the value of the field using a C-style null-terminated string. After calling this, has_foo() will return true and foo() will return a copy of value.<br>void set_foo(const char* value, int size): Like above, but the string size is given explicitly rather than determined by looking for a null-terminator byte.<br>string* mutable_foo(): Returns a pointer to the mutable string object that stores the field’s value. If the field was not set prior to the call, then the returned string will be empty (not the default value). After calling this, has_foo() will return true and foo() will return whatever value is written into  the given string.<br>void clear_foo(): Clears the value of the field. After calling this, has_foo() will return false and foo() will return the default value.<br>void set_allocated_foo(string* value): Sets the string object to the field and frees the previous field value if it exists. If the string pointer is not NULL, the message takes ownership of the allocated string object and has_foo() will return true. Otherwise, if the value is NULL, the behavior is the same as calling clear_foo().<br>string* release_foo(): Releases the ownership of the field and returns the pointer of the string object. After calling this, caller takes the ownership of the allocated string object, has_foo() will return false, and foo() will return the default value.  </li>
+<li>重复的整数类型（Repeated Numeric Type）<br>比如：repeated int32 foo = 1;<br>编译器产生的accessor function为：<br>int foo_size() const: Returns the number of elements currently in the field.<br>int32 foo(int index) const: Returns the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>void set_foo(int index, int32 value): Sets the value of the element at the given zero-based index.<br>void add_foo(int32 value): Appends a new element to the field with the given value.<br>void clear_foo(): Removes all elements from the field. After calling this, foo_size() will return zero.<br>const RepeatedField<int32>&amp; foo() const: Returns the underlying RepeatedField that stores the field’s elements. This container class provides STL-like iterators and other methods.<br>RepeatedField<int32>* mutable_foo(): Returns a pointer to the underlying mutable RepeatedField that stores the field’s elements. This container class provides STL-like iterators and other methods.</int32></int32></li>
+<li>Repeated string Type<br>比如：<br>repeated string foo = 1;<br>repeated bytes foo = 1;<br>编译器产生的accessor function为：<br>int foo_size() const: Returns the number of elements currently in the field.<br>const string&amp; foo(int index) const: Returns the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>void set_foo(int index, const string&amp; value): Sets the value of the element at the given zero-based index.<br>void set_foo(int index, const char* value): Sets the value of the element at the given zero-based index using a C-style null-terminated string.<br>void set_foo(int index, const char* value, int size): Like above, but the string size is given explicitly rather than determined by looking for a null-terminator byte.<br>string* mutable_foo(int index): Returns a pointer to the mutable string object that stores the value of the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>void add_foo(const string&amp; value): Appends a new element to the field with the given value.<br>void add_foo(const char* value): Appends a new element to the field using a C-style null-terminated string.<br>void add_foo(const char* value, int size): Like above, but the string size is given explicitly rather than determined by looking for a null-terminator byte.<br>string* add_foo(): Adds a new empty string element and returns a pointer to it.<br>void clear_foo(): Removes all elements from the field. After calling this, foo_size() will return zero.<br>const RepeatedPtrField<string>&amp; foo() const: Returns the underlying RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.<br>RepeatedPtrField<string>* mutable_foo(): Returns a pointer to the underlying mutable RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.    </string></string></li>
+<li>Repeated Enum Type 跟numeric一致  </li>
+<li>重复的嵌入式消息类型（Repeated embedded message type）<br>比如：repeated Bar foo = 1;<br>编译器产生的函数为：<br>int foo_size() const: Returns the number of elements currently in the field.<br>const Bar&amp; foo(int index) const: Returns the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>Bar* mutable_foo(int index): Returns a pointer to the mutable Bar object that stores the value of the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>Bar* add_foo(): Adds a new element and returns a pointer to it. The returned Bar is mutable and will have none of its fields set (i.e. it will be identical to a newly-allocated Bar).<br>void clear_foo(): Removes all elements from the field. After calling this, foo_size() will return zero.<br>const RepeatedPtrField<bar>&amp; foo() const: Returns the underlying RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.<br>RepeatedPtrField<bar>* mutable_foo(): Returns a pointer to the underlying mutable RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.  </bar></bar></li>
+<li>Oneof Numeric Fields<br>For this oneof field definition:<br>oneof oneof_name {<br>int32 foo = 1;<br>…<br>}<br>The compiler will generate the following accessor methods:<br>bool has_foo() const (proto2 only): Returns true if oneof case is kFoo.<br>int32 foo() const: Returns the current value of the field if oneof case is kFoo. Otherwise, returns the default value.<br>void set_foo(int32 value):<br>If any other oneof field in the same oneof is set, calls clear_oneof_name().<br>Sets the value of this field and sets the oneof case to kFoo.<br>has_foo() (proto2 only) will return true, foo() will return value, and oneof_name_case() will return kFoo.<br>void clear_foo():<br>Nothing will be changed if oneof case is not kFoo.<br>If oneof case is kFoo, clears the value of the field and oneof case. has_foo() (proto2 only) will return false, foo() will return the default value and oneof_name_case() will return ONEOF_NAME_NOT_SET.</li>
+<li>Map Fields  </li>
+</ol>
+<p>For this map field definition:  </p>
+<p>map&lt;int32, int32&gt; weight = 1;<br>The compiler will generate the following accessor methods:  </p>
+<p>const google::protobuf::Map&lt;int32, int32&gt;&amp; weight();: Returns an immutable Map.<br>google::protobuf::Map&lt;int32, int32&gt;* mutable_weight();: Returns a mutable Map.<br>A google::protobuf::Map is a special container type used in protocol buffers to store map fields. As you can see from its interface below, it uses a commonly-used subset of std::map and std::unordered_map methods.  </p>
+<p>template&lt;typename Key, typename T&gt; {<br>class Map {<br>  // Member types<br>  typedef Key key_type;<br>  typedef T mapped_type;<br>  typedef … value_type;  </p>
+<p>  // Iterators<br>  iterator begin();<br>  const_iterator begin() const;<br>  const_iterator cbegin() const;<br>  iterator end();<br>  const_iterator end() const;<br>  const_iterator cend() const;<br>  // Capacity<br>  int size() const;<br>  bool empty() const;  </p>
+<p>  // Element access<br>  T&amp; operator[](const Key&amp; key);<br>  const T&amp; at(const Key&amp; key) const;<br>  T&amp; at(const Key&amp; key);  </p>
+<p>  // Lookup<br>  int count(const Key&amp; key) const;<br>  const_iterator find(const Key&amp; key) const;<br>  iterator find(const Key&amp; key);  </p>
+<p>  // Modifiers<br>  pair&lt;iterator, bool&gt; insert(const value_type&amp; value);<br>  template<class inputit><br>  void insert(InputIt first, InputIt last);<br>  size_type erase(const Key&amp; Key);<br>  iterator erase(const_iterator pos);<br>  iterator erase(const_iterator first, const_iterator last);<br>  void clear();  </class></p>
+<p>  // Copy<br>  Map(const Map&amp; other);<br>  Map&amp; operator=(const Map&amp; other);<br>}<br>The easiest way to add data is to use normal map syntax, for example:  </p>
+<p>std::unique_ptr<protoname> my_enclosing_proto(new ProtoName);<br>(*my_enclosing_proto-&gt;mutable_weight())[my_key] = my_value;<br>pair&lt;iterator, bool&gt; insert(const value_type&amp; value) will implicitly cause a deep copy of the value_type instance. The most efficient way to insert a new value into a google::protobuf::Map is as follows:  </protoname></p>
+<p>T&amp; operator[](const Key&amp; key): map[new_key] = new_mapped;<br>Using google::protobuf::Map with standard maps  </p>
+<p>google::protobuf::Map supports the same iterator API as std::map and std::unordered_map. If you don’t want to use google::protobuf::Map directly, you can convert a google::protobuf::Map to a standard map by doing the following:  </p>
+<p>std::map&lt;int32, int32&gt; standard_map(message.weight().begin(),<br>                                    message.weight().end());<br>Note that this will make a deep copy of the entire map.  </p>
+<p>You can also construct a google::protobuf::Map from a standard map as follows:  </p>
+<p>google::protobuf::Map&lt;int32, int32&gt; weight(standard_map.begin(),   standard_map.end());<br>16:<br>Enumerations  </p>
+<p>Given an enum definition like:  </p>
+<p>enum Foo {<br>  VALUE_A = 0;<br>  VALUE_B = 5;<br>  VALUE_C = 1234;<br>}<br>The protocol buffer compiler will generate a C++ enum type called Foo with the same set of values. In addition, the compiler will generate the following functions:  </p>
+<p>const EnumDescriptor* Foo_descriptor(): Returns the type’s descriptor, which contains information about what values this enum type defines.<br>bool Foo_IsValid(int value): Returns true if the given numeric value matches one of Foo’s defined values. In the above example, it would return true if the input were 0, 5, or 1234.<br>const string&amp; Foo_Name(int value): Returns the name for given numeric value. Returns an empty string if no such value exists. If multiple values have this number, the first one defined is returned. In the above example, Foo_Name(5) would return “VALUE_B”.<br>bool Foo_Parse(const string&amp; name, Foo* value): If name is a valid value name for this enum, assigns that value into value and returns true. Otherwise returns false. In the above example, Foo_Parse(“VALUE_C”, &amp;someFoo) would return true and set someFoo to 1234.<br>const Foo Foo_MIN: the smallest valid value of the enum (VALUE_A in the example).<br>const Foo Foo_MAX: the largest valid value of the enum (VALUE_C in the example).<br>const int Foo_ARRAYSIZE: always defined as Foo_MAX + 1.<br>Be careful when casting integers to proto2 enums. If an integer is cast to a proto2 enum value, the integer must be one of the valid values for than enum, or the results may be undefined. If in doubt, use the generated Foo_IsValid() function to test if the cast is valid. Setting an enum-typed field of a proto2 message to an invalid value may cause an assertion failure. If an invalid enum value is read when parsing a proto2 message, it will be treated as an unknown field. These semantics have been changed in proto3. It’s safe to cast any integer to a proto3 enum value as long as it fits into int32. Invalid enum values will also be kept when parsing a proto3 message and returned by enum field accessors.  </p>
+<p>Be careful when using proto3 enums in switch statements. Proto3 enums are open enum types with possible values outside the range of specified symbols. Unrecognized enum values will be kept when parsing a proto3 message and returned by the enum field accessors. A switch statement on a proto3 enum without a default case will not be able to catch all cases even if all the known fields are listed. This could lead to unexpected behavior including data corruption and runtime crashes. Always add a default case or explicitly call Foo_IsValid(int) outside of the switch to handle unknown enum values.  </p>
+<p>You can define an enum inside a message type. In this case, the protocol buffer compiler generates code that makes it appear that the enum type itself was declared nested inside the message’s class. The Foo_descriptor() and Foo_IsValid() functions are declared as static methods. In reality, the enum type itself and its values are declared at the global scope with mangled names, and are imported into the class’s scope with a typedef and a series of constant definitions. This is done only to get around problems with declaration ordering. Do not depend on the mangled top-level names; pretend the enum really is nested in the message class.</p>
+<h2 id="oneof"><a href="#oneof" class="headerlink" title="oneof"></a>oneof</h2><p>Oneof</p>
+<p>Given a oneof definition like this:<br>oneof oneof_name {<br>    int32 foo_int = 4;<br>    string foo_string = 9;<br>    …<br>}<br>The compiler will generate the following C++ enum type:</p>
+<p>enum OneofNameCase {<br>  kFooInt = 4,<br>  kFooString = 9,<br>  ONEOF_NAME_NOT_SET = 0<br>}<br>In addition, it will generate this method:</p>
+<p>OneofNameCase oneof_name_case() const: Returns the enum indicating which field is set. Returns ONEOF_NAME_NOT_SET if none of them is set.<br>The compiler also generates the following private method, which is used in oneof field accessors:</p>
+<p>void clear_oneof_name(): Frees the object if the oneof field set uses a pointer (Message or String), and sets the oneof case to ONEOF_NAME_NOT_SET.</p>
+<h2 id="解析和序列化"><a href="#解析和序列化" class="headerlink" title="解析和序列化"></a>解析和序列化</h2><p>bool SerializeToString(string* output) const;: serializes the message and stores the bytes in the given string. Note that the bytes are binary, not text; we only use the string class as a convenient container.</p>
+<p>bool ParseFromString(const string&amp; data);: parses a message from the given string.</p>
+<p>bool SerializeToOstream(ostream* output) const;: writes the message to the given C++ ostream.</p>
+<p>bool ParseFromIstream(istream* input);: parses a message from the given C++ istream.</p>
+<h2 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h2><p>利用反射，可以写不针对某个特定类型的message的代码，这在把message和其它的编码格式相互转换时非常有用，比如XML和JSON。</p>
+<p>反射的API见<a href="https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.message#Message.Reflection" target="_blank" rel="noopener">https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.message#Message.Reflection</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/protobuf/" rel="tag"># protobuf</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/02/unlink and hard link and soft link/" rel="next" title="Linux的unlink()、硬链接、软链接">
+                <i class="fa fa-chevron-left"></i> Linux的unlink()、硬链接、软链接
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/19/c++ 11 新特性学习/" rel="prev" title="C++11新特性学习">
+                C++11新特性学习 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.JPG" alt="何谐">
+            
+              <p class="site-author-name" itemprop="name">何谐</p>
+              <p class="site-description motion-element" itemprop="description">终身学习者</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/hexiecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:610531006@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#开发者文档笔记"><span class="nav-number">1.</span> <span class="nav-text">开发者文档笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#信息编码格式"><span class="nav-number">1.1.</span> <span class="nav-text">信息编码格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基于128位varints编码"><span class="nav-number">1.1.1.</span> <span class="nav-text">基于128位varints编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消息结构"><span class="nav-number">1.1.2.</span> <span class="nav-text">消息结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译器生成c-代码"><span class="nav-number">1.2.</span> <span class="nav-text">编译器生成c++代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#oneof"><span class="nav-number">1.3.</span> <span class="nav-text">oneof</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解析和序列化"><span class="nav-number">1.4.</span> <span class="nav-text">解析和序列化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反射"><span class="nav-number">1.5.</span> <span class="nav-text">反射</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">何谐</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

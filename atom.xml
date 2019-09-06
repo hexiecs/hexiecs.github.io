@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://hexiecs.com/"/>
-  <updated>2019-09-06T02:48:50.652Z</updated>
+  <updated>2019-09-06T15:36:12.154Z</updated>
   <id>http://hexiecs.com/</id>
   
   <author>
@@ -15,6 +15,158 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Bigtable论文笔记</title>
+    <link href="http://hexiecs.com/2019/05/12/Bigtable%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"/>
+    <id>http://hexiecs.com/2019/05/12/Bigtable论文笔记/</id>
+    <published>2019-05-12T08:54:00.000Z</published>
+    <updated>2019-09-06T15:36:12.154Z</updated>
+    
+    <content type="html"><![CDATA[<p>Bigtable论文的笔记</p><a id="more"></a><h1 id="Bigtable论文笔记"><a href="#Bigtable论文笔记" class="headerlink" title="Bigtable论文笔记"></a>Bigtable论文笔记</h1><h2 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h2><p><code>(row:string, column:string, timestamp:int64) -&gt; string</code><br>一个Bigtable就是一个多维的排序map，其中row和column类似于关系型数据库中的概念。<br>对于row有几点特别的：</p><ul><li>在同一行的读写都是原子的，而跨行的读写并不是原子的。  </li><li>行按字典序排序  </li><li>连续的一些行称为一个tablet，是负载均衡的基本单位。  </li></ul><p>对于column有一点特别的：  </p><ul><li>多个列key可以被划分到一个列族中，列族是权限控制的基本单位，并且同一个列族的数据类型是一样的，因此数据可以基于列被压缩。  </li></ul><p>timestamp：  </p><ul><li>时间戳使得Bigtable可以存储同一数据的多个版本，还可以基于时间戳进行垃圾回收，比如只保留几天的数据，只保留几个版本的数据等等。</li></ul><h2 id="系统组成"><a href="#系统组成" class="headerlink" title="系统组成"></a>系统组成</h2><ul><li>client library</li><li>一个master server，负责分配tablets给tablet server，监测tablet server的增加和退出，tablet server的负载均衡，GFS中文件的垃圾回收。还负责schema的改变，比如表和column的创建。  </li><li>tablet server管理许多tablets，直接负责tablets的读写和分裂。</li></ul><h2 id="Tablet位置"><a href="#Tablet位置" class="headerlink" title="Tablet位置"></a>Tablet位置</h2><p>Bigtable用一个类似于B+树的三层结构来存储tablet的位置信息，如图所示。</p><p><img src="/images/Distribute/B1.png" alt></p><ol><li>root tablet的位置存放在Chubby中，root tablet中包含了METADATA table中的所有tablet的位置信息。其实root tablet就是METADATA table的第一个tablet，但是它永远不会分裂。  </li><li>METADATA table的每一行存储一个tablet的位置信息，row key是这个tablet所在的表的标识符和这个tablet的最后一行两者的encoding。</li><li>METADATA tablet的每一行大概有1KB的数据，假设一个METADATA tablet有128MB，那么这个三层结构可以索引2^34个tablet(每个tablet有2^17行，那么root tablet可以索引2^17个METADATA tablet，而每个METADATA tablet又可以索引2^17个实际的数据tablet)。</li></ol><p>client library会缓存tablet的位置信息，如果client的缓存是正确的，那直接根据缓存的信息寻址即可，否则这里分为两种情况讨论：</p><ol><li>client的缓存是空的<br>这时候client需要依次去chubby，root tablet server，metadata tablet server去拿位置信息，总共3个rtt</li><li>client的缓存是错误的<br>讨论最坏情况，client缓存的metadata tablet信息和root tablet信息都是错的。client会依次进行以下步骤：<br>2.1 先根据缓存的metadata tablet信息去访问对应的tablet，发现位置是错的<br>2.2 client去metadata tablet server拿新的tablet位置信息，发现metadata tablet server的位置信息也是错的。<br>2.3 client去root tablet server拿metadata tablet的最新位置信息，发现root tablet server的位置也是错的<br>2.4 client去chubby拿最新的root tablet server位置信息<br>2.5 client去root tablet server拿最新的metadata tablet server信息<br>2.6 client去metadata tablet server拿最新的tablet位置信息<br>最坏情况下总共花了6个rtt  </li></ol><h2 id="Tablet分配"><a href="#Tablet分配" class="headerlink" title="Tablet分配"></a>Tablet分配</h2><p>master负责跟踪tablet server的运行情况，以及tablets到tablet server的分配情况。当一个tablet没有被分配时，master会向一个可用的tablet server发送一个tablet load请求来分配该tablet。<br>Bigtable使用Chubby来跟踪tablet server，当tablet server启动时，会向chubby申请一个互斥锁（其实是chubby某个目录下的一个文件）。当tablet server失去锁时就会停止服务，当这个锁文件已经被删后，这个tablet server再也不能对外服务，因此它就自己退出了。<br>master通过周期性的问tablet server它们的锁状态来检测它们的运行情况，当tablet server报告自己失去了锁，master就会去chubby尝试获取相同的锁，如果成功了，说明chubby是正常的，而这个tablet server要么挂了，要么是连不上chubby，因此master就可以把这个tablet server的文件给删了，把这个tablet server负责的tablets分配给其他tablet server。<br>当master启动时，它需要发现当前tablet的分配情况，master启动时的运行步骤如下：  </p><ol><li>在chubby获取master锁，防止并发的master启动</li><li>master扫描chubby中的tablet server的目录，获取当前存活的server</li><li>master和每个存活的server通信，发现已经分配的tablets</li><li>master扫描METADATA table来发现所有的tablets，当遇到还未分配的tablets时，就把它加入到未分配的集合中</li></ol><p>在第4步扫描METADATA table前，METADATA tablets需要被分配，因此master在进行第4步前会先将root tablets分配，而root tablets包含所有的METADATA tablets的名字，master进而可以知道METADATA tablets的分配情况。<br>tablet的集合在几种情况下会变化：</p><ul><li>table被创建或删除</li><li>两个tablet被merge成一个更大的tablet</li><li>一个tablet被分裂成两个</li></ul><p>前两种情况都是由master发起的，最后一种情况直接由tablet server发起。tablet server在分裂时会通知master，如果这个通知丢失了（比如master或者tablet server挂了），master在后来让tablet server加载已经分裂的tablet时也会知道这一点。这个tablet server会通知master，因为它在METADATA table中找到的tablet只是master让它加载的tablet的一部分（说明这个tablet已经分裂了而master还不知道）。  </p><h2 id="Tablet-Serving、Compaction"><a href="#Tablet-Serving、Compaction" class="headerlink" title="Tablet Serving、Compaction"></a>Tablet Serving、Compaction</h2><p>和leveldb原理相同</p><h2 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h2><h3 id="局部组"><a href="#局部组" class="headerlink" title="局部组"></a>局部组</h3><p>其实就是列式存储，个人认为Bigtable最大的贡献就是它的数据模型和列式存储了。Client可以将多个列族指定到一个局部组中，这个局部组的数据会被一个单独的SSTable文件存储。将数据按列进行存储使得读更加高效，因为当指定读某一列的数据时不用读很多没用的数据。<br>除此之外，局部组还有一些有用的参数，比如可以指定某一个局部组是常驻内存的，这样的话读的时候就不用访问磁盘，比较适合经常访问的少量的数据。</p><h3 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h3><p>Client可以控制一个局部组是否被压缩，压缩是作用于每个SSTable Block而不是整个文件，这样虽然会损失一些空间但是在读取的时候可以不用解压整个文件。</p><h3 id="缓存提高读性能"><a href="#缓存提高读性能" class="headerlink" title="缓存提高读性能"></a>缓存提高读性能</h3><p>为了提高读性能，tablet server使用两级的缓存。扫描缓存是把SSTable接口返回给tablet server的key value对缓存。块缓存是把从GFS读取的SSTable块缓存起来。扫描缓存对于重复读相同数据的的应用很有用，而块缓存对于倾向于读附近位置的数据的应用很有用。</p><h3 id="布隆过滤器"><a href="#布隆过滤器" class="headerlink" title="布隆过滤器"></a>布隆过滤器</h3><p>读操作必须要读取组成一个tablet的所有SSTable，如果这些SSTable都在磁盘的话，就会涉及到多次磁盘访问。通过指定布隆过滤器可以显著减少访问次数，因为布隆过滤器可以告诉我们一个key是否存在于SSTable中，如果不存在，就没必要再去磁盘读取了。这个事实也说明，大多数对于不存在的行或列的查找都是不需要访问磁盘的。</p><h3 id="commit-log实现"><a href="#commit-log实现" class="headerlink" title="commit-log实现"></a>commit-log实现</h3><p>如果每个tablet都独立有一个commit log的话，就会有非常多的文件并发的写入GFS，这会造成大量的磁盘访问。除此之外，独立的log文件也减少了group commit优化的效果。为了解决这个问题，Bigtable把所有的修改都提交到一个单独的commit log文件。<br>使用单独的commit log文件显著的提高了正常操作的性能，但是使恢复过程复杂了。当一个tablet server挂掉时，它负责的tablet会被分配给许多其它的tablet server，为了恢复一个tablet，新的tablet server需要加载之前的tablet server的commit log，但是这些tablets的commit log都被混合在一起。即使每个tablet server只应用对应tablet的那一部分，这个commit log文件也会被读很多次。<br>为了避免读log file很多次，首先将commit log按照key的字典序排序，排序后，某个tablet的所有entry都是连续的，因此只需要一个disk seek和一次顺序读就好了。为了并行排序，在排序的时候把log file分为64MB的段，然后分给tablet servers进行归并排序，排序由master进行协调，在某个tablet server表明它需要从log file文件进行恢复时被初始化。  </p><h3 id="加速tablet恢复"><a href="#加速tablet恢复" class="headerlink" title="加速tablet恢复"></a>加速tablet恢复</h3><p>当master把tablet从一个tablet server移到另一个时，源server会先做一个minor compaction来减少commit log中未compact的log entry数目。然后这个源server就停止服务这个tablet（这里新的server还未加载这个tablet，所以这时这个tablet是由谁负责没搞明白），这时候源server再做一次compaction来把上次做minor compaction期间新增的log entry给compact了，这时候新的server就可以加载这个tablet了并且不存在任何未compact的log entry。  </p><h3 id="利用不变性"><a href="#利用不变性" class="headerlink" title="利用不变性"></a>利用不变性</h3><p>因为SSTable的不可改变的特性，Bigtable的许多设计都简化了。比如，当读SSTable时，不需要任何的访问同步。唯一可变的数据结构是memtable，通过让每个memtable行copy-on-write的方式，使得读和写可以并发进行。<br>因为SSTable是不变的，所以去掉被删除的数据可以被转变为垃圾回收过期的SSTable。<br>最后，SSTable的不变性使得我们可以快速的分裂tablets，对于每个子tablet不用生成新的SSTable，可以和父tablet共享SSTable。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Bigtable论文的笔记&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/categories/Distribute/"/>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
+    
+      <category term="Storage" scheme="http://hexiecs.com/tags/Storage/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Chubby分布式锁服务总结</title>
+    <link href="http://hexiecs.com/2019/05/03/Chubby%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E6%9C%8D%E5%8A%A1%E6%80%BB%E7%BB%93/"/>
+    <id>http://hexiecs.com/2019/05/03/Chubby分布式锁服务总结/</id>
+    <published>2019-05-03T13:44:00.000Z</published>
+    <updated>2019-09-06T15:34:36.293Z</updated>
+    
+    <content type="html"><![CDATA[<p>Chubby分布式锁服务总结</p><a id="more"></a><h1 id="Chubby分布式锁服务总结"><a href="#Chubby分布式锁服务总结" class="headerlink" title="Chubby分布式锁服务总结"></a>Chubby分布式锁服务总结</h1><p>Chubby是很经典的分布式锁服务，趁最近有空读了一下论文，大部分篇幅都是在讲艰苦的工程上的优化和权衡，主要是为了提供可靠性和简单的语义，其中会话和fail-over的设计比较复杂，本文主要是总结一下我认为值得注意的地方。</p><h2 id="设计目的"><a href="#设计目的" class="headerlink" title="设计目的"></a>设计目的</h2><ol><li>提供粗粒度的分布式锁，比如leader选举、服务发现。</li><li>提供小数据的可靠存储</li><li>重点关注可靠性、一致性、扩展性而不是性能，一致性依靠paxos解决。</li><li>提供简单的语义 </li></ol><h2 id="Paxos库-VS-分布式锁服务"><a href="#Paxos库-VS-分布式锁服务" class="headerlink" title="Paxos库 VS 分布式锁服务"></a>Paxos库 VS 分布式锁服务</h2><p>一个重点的设计考虑是到底应该提供一个paxos库来为client解决分布式锁的一致性问题（假设client的服务能实现为状态机。。），还是直接提供一个高可用的分布式锁服务。作者给了应该提供锁服务的原因：  </p><ol><li>大多数服务在刚开始写的时候并没有考虑高可用，当服务的规模越来越大时，程序员才会考虑高可用。等服务改造的时候，直接调用分布式锁服务会比改造为使用一个一致性协议要简单。  </li><li>许多服务在选主或在许多组件之间划分数据的时候有广播结果的需求，所以应该给client提供一个存储和获取少量数据的服务。这个可以通过一个名字服务来完成，但是锁服务本身就可以完成这个任务，并且还可以复用一致性协议的代码，因此Chubby提供了存储小数据的能力。  </li><li>当然对程序员来说，锁比paxos状态机要简单多了（讽刺的是，大多数程序员对分布式锁的理解都有问题，很少人会考虑到异步通信环境下的机器失败的问题）。  </li><li>分布式一致性协议依靠quorum来做决定，使用多个副本来保证高可用，比如Chubby很多时候使用5副本。如果Client使用Chubby的话，即使它只有一台机器存活，也可以安全的使用锁），也就是client本身不需要做到多台机以及quorum，一致性由chubby来提供。而如果Client使用一个一致性的库的话，它自己就得有多台机器，并且保证大多数存活才能继续。  </li></ol><h2 id="细粒度锁-VS-粗粒度锁"><a href="#细粒度锁-VS-粗粒度锁" class="headerlink" title="细粒度锁 VS 粗粒度锁"></a>细粒度锁 VS 粗粒度锁</h2><p>细粒度锁指的是只会持有锁很短的时间（秒级或更短），而粗粒度锁指的是持有比较长的时间，比如说是用于选主，通常都会是几小时甚至几天。这两种粒度的锁对锁服务提出了不同的要求。<br>粗粒度的锁因为隔很长的时间才需要访问锁服务一次，所以对server端的负载压力很小，并且这个负载跟client端的处理速率关联很小（意思是即使client端每秒处理很多请求，锁服务的server端收到的请求速率也不会明显增加）。另外，锁服务server端的机器故障对client的影响也比较小。<br>相对的，细粒度的锁就完全相反了，server端的失败可能造成很多client阻塞。性能和扩容的能力都很重要，因为server端的负载和client的处理速率密切相关。<br>Chubby只试图提供粗粒度的锁，但是client端可以利用Chubby很容易的实现自己的细粒度的锁。一个应用程序可以把自己的细粒度的锁进行分组，然后利用Chubby把这些细粒度锁的组分配到应用自己的一些服务器上。这样做最大的好处是，client端对支撑自己的负载应该需要多少服务器负责了，并且不用自己去实现一致性协议的部分。  </p><h2 id="系统结构"><a href="#系统结构" class="headerlink" title="系统结构"></a>系统结构</h2><p><img src="/images/Distribute/C1.png" alt></p><p>Chubby这里是使用paxos协议来保证一致性的，通常使用5个副本，读写请求都由master来完成。如果一个副本挂了，并且几个小时都没有恢复，一个另外的替换系统就会选一台新机器，启动lock server的二进制，然后更新DNS table。master会定期从DNS table拉数据，就会得知这个变化，然后在数据库中更新cell成员的列表，这个列表也是通过普通的一致性协议在副本间维护一致性的。同时，这个新的机器会从一个文件服务器和其他的活跃副本那里拉一个当前数据库的备份，等这个机器成功处理了master的一个等待commit的请求后（说明此时数据已经是最新了），这个机器就可以参与投票了。</p><h2 id="文件、目录和handles"><a href="#文件、目录和handles" class="headerlink" title="文件、目录和handles"></a>文件、目录和handles</h2><p>Chubby的命名空间和Unix的文件系统基本一样，这个有个好处是Chuuby内的文件即可以被Chubby自己的API访问，也可以被其他的文件系统比如GFS的API访问，这可以复用很多工具的代码。<br>有临时和永久的节点，所有节点都可以被显示的删除，临时节点当没有client打开它们时就会被自动删除，所以临时的节点可以被用来检测client是否存活。<br>权限控制：每个节点有3个ACLs名字来控制读、写、更改ACLs的权限。ACLs本身就是一个文件，放在一个ACL目录里。这些ACLs文件由简单的名字列表组成，比如，文件F的写名字是foo，ACL目录下有一个文件的名字就是foo，这个文件里有一个叫bar的项，所以用户bar就被允许写文件F。因为Chubby的ACLs是简单的文件，所以可以被其它想用类似机制的服务所复用。<br>handle，和Unix文件描述符类似，包括三个组成部分：  </p><ul><li>检查位： 防止client伪造handles，因此完整的访问控制检查只需要在创建handle的时候做。  </li><li>序列号：让master可以知道这个handle是不是旧的master产生的。</li><li>模式信息： 在创建时提供，可以在一个master接收到旧的master创建的handle时重建这个handle的状态。  </li></ul><h2 id="强制锁-VS-建议锁"><a href="#强制锁-VS-建议锁" class="headerlink" title="强制锁 VS 建议锁"></a>强制锁 VS 建议锁</h2><p>强制锁指的是当client没有持有锁时资源就不可用了，而建议锁指的是只有其它client想要持有同样的锁时才会产生冲突，持有锁对于访问资源来说并不是必要的。Chubby采用的是建议锁，理由如下：  </p><ul><li>Chubby锁常常保护其它服务的资源，而不是Chubby中跟锁关联的文件，而使用强制锁往往意味着要对其它服务做额外的修改。  </li><li>当用户需要访问锁住的文件进行调试或管理目的时，我们并不想用户关掉程序。  </li><li>我们的开发者使用很常见的错误检测方式，写assert语句比如‘assert 锁X被持有了’，所以强制锁的方式对他们来说意义不大。<br>在分布式系统中锁是复杂的，因为消息是不确定的，进程也可能会挂掉。举个例子，一个进程持有一个锁L，然后发起一个请求R，然后挂掉。另一个进程就会去持有这个锁L，然后在R到达前做一些操作。等R到达后，它可能就会在没有锁L的保护下进行操作，潜在的会造成不一致的数据。这里的意思是这个锁L保护了一段数据data，按理说这个R应该在这个data上进行操作的，但是由于进程挂掉，导致另一个进程修改了这个data，所以R就可能在不一致的数据上进行操作。<br>Chubby提供了一种在使用锁的时候使用序列号的方法来解决这个问题。在每次获得锁后都会请求一个序列号（其实是一个不可读的描述锁状态的字符串），client在发送请求的时候，会把这个序列号发给服务端，服务端会检测这个序列号的合法性。服务端可以通过和Chubby之间维护的cache来检测这个序列号的合法性，或者是直接和自己最近观测到的序列号比较（这里应该隐藏了一个假设，就是同一个cell的请求会路由到同一个服务器）。<br>尽管序列号机制很简单，但是有些协议发展的很慢，不能带上序列号，chubby因此提供了另一种不完美但是更容易的方式来解决这个问题。如果一个client是以正常的方式释放锁的，那么这个锁立刻可以被其他的client获得，但是如果一个锁是因为client挂掉或不可访问而丢掉的，锁服务器会等一段叫lock-delay的时间来防止其它的client获得这个锁。</li></ul><h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><p>Chubby的client端可以订阅一些事件，这些事件通过回调的方式异步发送给client。</p><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>Chubby使用的是一致性的、write-through缓存。当文件数据或元数据被修改时，server端会阻塞住修改请求，然后向所以的client cache发出invalidate命令，这个invalidate命令是通过KeepAlive RPC的响应来完成的。client端收到Keep Alive响应后会马上使缓存失效，然后马上发起下一次Keep Alive RPC，顺带确认自己已经使缓存失效了。Server端在收到所有client的确认或者是client端的缓存租约过期后，才会继续这个阻塞的修改请求。<br>Chuuby还会缓存锁，也就是client会缓存锁比真正需要的时间更长，因为预期同一个client还会使用这个锁。当另一个client请求同样的锁时，锁持有人能得到通知，因此有机会释放这个锁。</p><h2 id="会话"><a href="#会话" class="headerlink" title="会话"></a>会话</h2><p>会话是Chubby Cell和Client端通过KeepAlive握手维护的一种关系，当会话有效时，client端的handle，锁，缓存都是有效的。<br>当client第一次连接cell时，它会请求一个新的会话，当client结束时会显示的终止会话，或者当这个会话一分钟内没有调用和打开handle时，也会被隐式的关闭。<br>每个会话都有个对应的租约，master承诺在租约内不会单向的关闭会话，master可以延长这个租约，但不能减少。收到KeepAlive后，master会阻塞这个RPC，直到client的租约接近过期，然后master会允许这个RPC返回，就可以通知client新的租约超时时间。master可以任意扩展租约超时，默认是12s，但是过载的master可以指定更大的值来减少KeepAlive RPC的数量。client在收到响应后，就会马上发起一个新的KeepAlive，因此几乎总是有一个KeepAlive被阻塞在master。<br>除开用来扩展租约之外，KeepAlive还被用来传递事件和缓存失效给client。如果事件或者缓存失效发生了，master允许KeepAlive立刻返回。在KeepAlive RPC的响应中附带上事件确保client在没有确认缓存失效前不能维护会话，<br>client维护了自己的一个本地租约超时时间，是master租约超时的近似。之所以还要维护一个本地的，是因为KeepAlive RPC在网络上传递还需要时间，并且master的时钟速率跟client也不相同，所以client需要对这两个因素作出保守的估计。时钟速率这里，主要担心的是server端的时间走的太快，比如租约是12s，client端这里以为刚走了6s，server端那里已经12s了，这样的话server端已经把会话给关闭了client端也不会知道，就会造成不一致。因此文章里说server端的时钟和client端的时钟相比不会比一个已知的常数更快，client端就可以据此作出估计。<br>当client端租约超时时，就会进入一种jeopardy状态，再等一段称为grace period的时间后client端才会真正的认为这个会话超时了。在这期间，如果client端和server端成功的进行了一次KeepAlive RPC的话，会话就再次进入正常状态。<br>Chubby的client库可以通知应用程序jeopardy事件，当会话恢复正常时，会通知应用程序safe事件，当会话超时时，会通知应用程序超时事件。这些信息使应用程序可以知道会话的状态，在不确定会话是否关闭时可以停下来等一会儿，如果只是个临时性的问题的话，就可以自动恢复而不用重启应用。这避免了应用重启的巨大开销。  </p><h2 id="Fail-overs"><a href="#Fail-overs" class="headerlink" title="Fail-overs"></a>Fail-overs</h2><p>在master挂掉的时候，如果master选举很快，那client可以在自己的本地超时过期前就联系上新的master；否则，client的本地超时过期后，client可以利用grace period来让会话在fail-over期间得以维持，也就是说，grace period其实增加了client端的租约超时时间。<br><img src="/images/Distribute/C2.png" alt><br>图2是client端在master fail-over时利用grace period来保留会话的一个例子。从图中可以看到client的本地租约已经超时，client进入了jeopardy状态，在grace period期间，client成功的联系上了新的master。一旦client成功联系上新master，对应用程序而言，就像是没有失败发生一样。为了实现这个，新master必须要重建旧master的内存状态，一个新选举出来的master需要进行的流程：  </p><ol><li>首先选一个新的client epoch号，client需要在每个调用中带上这个epoch号。master会拒绝使用旧epoch号的client端，这可以防止新master对一个很老的发送给旧master的包作出响应。  </li><li>新master可能会对master-location请求作出响应，但不会对跟session有关的请求作出响应。  </li><li>新master根据数据库中持久化的信息在内存中构建锁和会话的数据结构，会话的租约被扩展到之前的master可能已经使用的最大值。  </li><li>master现在允许client执行KeepAlive  </li><li>给每个会话生成一个fail-over事件，使client端刷新缓存，因为client可能错过了缓存失效事件，并且警告应用程序其它事件可能也丢掉了。（因为旧master挂的时候可能还来不及发送各种事件就挂了）。  </li><li>master等待client端确认fail-over事件或者是client端的会话超时。  </li><li>master允许所有的操作正常进行。  </li><li>如果client使用一个旧的handle，新的master会在内存中构建这个handle的状态。如果这个重建的handle后续被关了，master也会在内存中记录下来，使得在这个master的任期内不可能再重新创建一个相同的handle。  </li><li>在一段时间后，master会把没有handle打开的临时文件给删了，因此client端需要在这段时间内刷新自己对临时文件的handle。这个机制有个不好的地方是在fail-over期间如果一个临时文件的所有client端都失去了会话，这个临时文件也不能及时被删除（需要等这段时间结束，通常是1min）。</li></ol><h2 id="扩展性"><a href="#扩展性" class="headerlink" title="扩展性"></a>扩展性</h2><p>一个chubby master可能会和非常多的client直接通信，因此最有效的扩展机制是减少和master之间的通信，而不是提升请求处理的速度。chubby使用了几个方法：  </p><ul><li>创建任意多的chubby cell，使得chubby client可以直接和附近的cell进行通信。  </li><li>master在负载很重时可以增加租约超时时间，使得可以减少KeepAlive RPC的数目。KeepAlive RPC是目前请求中占最大部分的，对于一个过载的机器来说，不能及时处理KeepAlive RPC是最常见的错误，因为client对其它的请求耗时基本都不太敏感。  </li><li>chubby client缓存</li><li>使用协议转换服务器来将chubby的协议转换成更简单的协议，比如DNS和其它的一些协议。<br>文中介绍了两个常用的机制，代理和分区，使得chubby可以进一步扩展。<h3 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h3>chubby的协议可以被代理，通过受信任的进程把请求从client端发送给server端。代理可以通过处理Keepalive请求和读请求来减少server端的负载，但是没办法减少写的流量。但是写流量对chubby的正常负载占比不到1%。如果一个proxy处理N个client，那KeepAlive的流量能够减少N倍。proxy cache能够减少读流量程度取决于读共享的平均数量，一般大约是10。不过读流量对chubby的负载占比不到10%，因此KeepAlive的流量减少是重要的多的。<br>代理对于写和第一次读都会增加一次RPC，因此不可用的概率至少是之前的两倍，因为每个代理的client现在都依赖两个机器：代理和master。<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3>命名空间可以根据目录进行分区，每个分区都有自己的副本和master，并且前提是跨分区的通信相当少。</li></ul><h2 id="fail-over时的问题"><a href="#fail-over时的问题" class="headerlink" title="fail-over时的问题"></a>fail-over时的问题</h2><p>master fail-over最开始的设计是master在新会话创建时把会话写进数据库中，但是当许多进程同时启动时，这就会造成过载。为了避免这个，server端杯修改成不是在创建时把会话写进数据库，而是在会话第一次尝试修改，锁获取或者打开文件时。另外，在KeepAlive时，会有一定的概率把会话写进数据库。因此，对于只读会话而言，写开销就会随着时间被分散了。<br>这个修改带来的一个问题是，只读会话可能不会被写进数据库，因此在fail-over时就会被忽略。如果所有被记录的会话都成功的跟新master取得了联系（这里指的是都成功确认了fail-over事件），那mater就不会等一个额外的租约超时时间，如果这时候这个只读会话的租约还未超时，那它就可能读到一个旧的数据。虽然在实际系统中，这不太可能发生，因为在fail-over时，几乎总是有会话不能成功的和新master取得联系。尽管如此，fail-over还是修改了设计来避免这个影响。<br>在新设计下，不会在数据库中记录会话信息，而是像重建handle一样重建会话。新master现在会等一个最坏情况下的完整超时时间后才会允许操作进行，因为它不知道是否所有的会话都已经成功的确认了fail-over事件。  </p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Chubby分布式锁服务总结&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/categories/Distribute/"/>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
+    
+      <category term="Lock" scheme="http://hexiecs.com/tags/Lock/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Raft协议的一些思考</title>
+    <link href="http://hexiecs.com/2018/12/02/Raft%E5%8D%8F%E8%AE%AE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/"/>
+    <id>http://hexiecs.com/2018/12/02/Raft协议的一些思考/</id>
+    <published>2018-12-02T02:28:00.000Z</published>
+    <updated>2019-09-06T15:34:36.294Z</updated>
+    
+    <content type="html"><![CDATA[<p>Raft协议的一些思考</p><a id="more"></a><h1 id="Raft协议的一些思考"><a href="#Raft协议的一些思考" class="headerlink" title="Raft协议的一些思考"></a>Raft协议的一些思考</h1><h2 id="什么一致？"><a href="#什么一致？" class="headerlink" title="什么一致？"></a>什么一致？</h2><p>一致性协议都是为了保证所有的节点状态是一致的，而一致的日志输出到状态机就可以产生一致的状态，所以只需要保证日志是一致的。</p><h2 id="怎么保证？"><a href="#怎么保证？" class="headerlink" title="怎么保证？"></a>怎么保证？</h2><h3 id="简化问题"><a href="#简化问题" class="headerlink" title="简化问题"></a>简化问题</h3><p>首先明确一下适用的场景：异步网络通信环境，非拜占庭错误。设想一种理想情况，没有节点宕机和网络分区发生。这样保证起来就会很简单，所有的请求都发给leader，leader把日志都同步给follower后，将日志提交到状态机。由于所有的follower都是复制的同一个leader的日志，自然大家都是一致的。然而现实情况不会这么完美，在分布式系统中节点宕机，网络分区是常态，所以我们要解决可能出现的问题。</p><h3 id="现实情况下会出现什么问题"><a href="#现实情况下会出现什么问题" class="headerlink" title="现实情况下会出现什么问题"></a>现实情况下会出现什么问题</h3><ol><li>leader出故障了</li><li>follower出故障了</li><li>网络分区了  </li></ol><p>下面分别阐述Raft是怎么解决这三个问题的</p><h3 id="1-leader出故障了"><a href="#1-leader出故障了" class="headerlink" title="1.leader出故障了"></a>1.leader出故障了</h3><p>这是最复杂的情况，会影响选主和日志的同步</p><h4 id="选主"><a href="#选主" class="headerlink" title="选主"></a>选主</h4><p>由于我们在上面说的理想情况下，follower都是复制的leader的日志，所以我们必须保证集群中任何时刻都存在leader，并且期望有且只有一个，因为leader大于1个时，日志就出现冲突了。 当leader出故障时，必然就需要重新选一个leader，所以Raft就设计了选主的算法，具体算法直接看论文就可以了。这里提出几个问题：  </p><ol><li>为什么要设置任期号?<br>任期号在Raft中(以及其它的一些一致性协议中)非常重要，它其实代表了当前节点的状态是否足够新，因为我们总是认为新的更为准确。在分布式环境中，节点可能会收到彼此冲突的消息，那选哪个呢，就选任期号大的，所以在发动选举时，就会将任期号加一来保证新的leader会被识别为更新的。  </li><li>什么时候leader会大于1个，怎么处理?<br>当网络分区时，就可能出现leader大于1个的情况，普通的网络分区比较简单，比如A,B和C，D，E出现了分区。这里讨论一种稍微复杂的情况，比如当前有A,B,C,D,E五台机，A为leader，此时A和B二者的网络出现分区，但是A,C,D,E以及B,C,D,E都可以正常通信，由于B超过一定时间没有收到leader的心跳，这时候B的term+1，发起新的选举，然后分两种情况:1.在B选举之前，A向C,D,E写了新的日志，那这时候B的日志不是最新的，选举永远不会成功，相当于此时集群中A,C,D,E会正常对外服务，leader不变 2.在B选举之前，A没有写新的日志，由于B的term更大，所以C，D，E会投票给B，这时候B成为新的leader，在此刻集群中出现了A,B两个leader，但A发出的请求不会被多数派通过(因为C,D,E的term更大)，所以对外是一致的。A在向C,D,E发心跳包的时候，从响应中可以知道自己的term落后了，就降为follower。然后，A也有可能再按照B的方式发起选举，这样就周而复始不断选举，造成很大的网络开销，这个可以通过pre-vote解决。所以即使出现了两个leader，Raft也可以保证确定log的时候不会有冲突。<h4 id="日志同步"><a href="#日志同步" class="headerlink" title="日志同步"></a>日志同步</h4>论文列举了几种leader和follower的日志不一致的情况，但除了(a)，本质原因都是由于这个follower以前是leader，当有未提交的日志时挂了，等恢复成follower的时候，就跟当前的leader日志不一致了。当出现不一致时，Raft采取的做法是用Leader的日志覆盖Follower的日志。这里提出几个问题：  </li><li>为什么leader将某个log entry设为commited之后，这个log entry之前的所有log，包括其他leader的log，都是可提交的?<br>因为日志匹配特性，某个日志是commit，说明leader和大多数节点在这条日志以及这条日志之前的日志都是相同的，因此都是可以提交的。  </li><li>leader完整特性怎么证明？有什么作用?<br>证明：虽然论文上的证明比较长，但可以由日志匹配特性直接得出leader完整特性，假设leader1不包含之前的某个leader2已经commit的日志，而如果这条commit的日志是最后一条日志，那这个leader1因为日志不够新不会赢得选举;如果这条日志<br>不是最后一条日志，那leader1的最后一条日志在被append的时候（那时候leader1还是follower），就会被当时的leader发现leader1中间缺失了一条commit日志，append就会失败。<br>作用：由于每个leader都包含之前的term被commit的所有日志，就意味着不管leader怎么改变，已经commit的日志不会丢，所以输入到状态机的日志就是一致的，保证了状态机安全特性。</li><li>为什么需要日志匹配特性？<br>日志匹配特性的目的有两个：一是为了得到leader完整特性，二是保证如果一个log entry可以commit了，那它之前的entry都是可以提交的。第二个目的让leader可以顺序的commit日志，进而状态机也可以顺序的apply日志，简化了处理逻辑。 假设我们可以放弃这两个目的(比如ParallelRaft)，比如通过其他措施来保证leader完整特性和状态机的安全特性，那我们就可以放弃日志匹配特性，那follower每次AppendEntry的时候就不用等待前面的entry都Append，就可以提高系统的整体吞吐。</li></ol><h3 id="2-follower出故障了"><a href="#2-follower出故障了" class="headerlink" title="2.follower出故障了"></a>2.follower出故障了</h3><p>只要出问题的follower小于总节点数量的一半，整个Raft Group就能正常工作。由于不一致时，follower会用leader的日志覆盖自己的，所以不管follower出什么问题，leader会对follower不断重试，只要在恢复时通过RPC将follower的日志恢复成leader的即可。</p><h3 id="3-网络分区"><a href="#3-网络分区" class="headerlink" title="3.网络分区"></a>3.网络分区</h3><p>网络分区可能会导致脑裂问题，在选主的第3个问题讨论了网络分区对选主的影响。同时，网络分区还可能会导致stale read, 可以通过ReadIndex Read和Lease Read的方法来解决，具体参考<a href="https://pingcap.com/blog-cn/lease-read/这篇文章。" target="_blank" rel="noopener">https://pingcap.com/blog-cn/lease-read/这篇文章。</a></p><h2 id="Multi-Raft"><a href="#Multi-Raft" class="headerlink" title="Multi-Raft"></a>Multi-Raft</h2><p>数据量大的时候，单个Raft实例负载太高，为了提高整体吞吐，往往将数据分为多个片，每个片由独立的Raft Group来管理。会有一个类似于元数据服务器的东西来管理所有的Raft Group，负责数据的分片，Group间的负载均衡等，难点引用<a href="https://zhuanlan.zhihu.com/p/33047950" target="_blank" rel="noopener">Elasticell-Multi-Raft实现</a>这篇文章提到的：</p><blockquote><ol><li>数据何如分片</li><li>分片中的数据越来越大，需要分裂产生更多的分片，组成更多Raft-Group</li><li>分片的调度，让负载在系统中更平均（分片副本的迁移，补全，Leader切换等等）</li><li>一个节点上，所有的Raft-Group复用链接（否则Raft副本之间两两建链，链接爆炸了）</li><li>如何处理stale的请求（例如Proposal和Apply的时候，当前的副本不是Leader、分裂了、被销毁了等等）</li><li>Snapshot如何管理（限制Snapshot，避免带宽、CPU、IO资源被过度占用）</li></ol></blockquote><p>具体可以参考上面这篇文章看看他们是怎么解决这些问题的</p><h2 id="ParallelRaft"><a href="#ParallelRaft" class="headerlink" title="ParallelRaft"></a>ParallelRaft</h2><p>这是在阿里的PolarFS中提出的对Raft在高I/O场景下的一种改进。具体来说就是Follower可以乱序确认，leader可以乱序提交，状态机可以乱序应用。<br>乱序确认是指Follower可以不管日志匹配特性，直接确认，所以我认为<a href="https://mp.weixin.qq.com/s/4s7lDKlQjV1mUoVv558Y7Q" target="_blank" rel="noopener">面向云数据库，超低延迟文件系统PolarFS诞生了</a>这篇文章中提到的ParallelRaft继承了Raft的LogMatching特性应该是有问题的，因为如果是乱序确认是没法满足LogMatching的。但是日志匹配特性的不满足就会导致leader完整特性的不满足，所以ParallelRaft用了另外的手段来满足leader完整特性，就是在leader选举的时候将leader中的log空洞给补上，这里感觉和multi-paxos很像。日志匹配特性的不满足还会带来的另一个问题就是一个entry变为commited之后，并不代表它之前的entry都可以commit了，因此leader的提交注定也是乱序的。状态机这里接收到一个log entry，如果发现它之前的entry不在的话当然可以一直等，直到把空洞补齐。但ParallelRaft采用了一种叫look behind buffer的数据结构来提高apply entry的并行度，每个log entry都记录自己前面的N个entry的修改情况（follower接收到的entry是乱序的，但leader生成entry的时候肯定是有序的，所以leader在生成一个entry的时候肯定知道了它前面的N个enty的修改情况）。look behind buffer记录每个entry修改的LBA（逻辑块地址），如果修改的块有重叠就代表有冲突，就需要等待，否则就可以乱序执行。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Raft协议的一些思考&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/categories/Distribute/"/>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
+    
+      <category term="Consensus Algorithm" scheme="http://hexiecs.com/tags/Consensus-Algorithm/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Cohort Query Processing论文笔记</title>
+    <link href="http://hexiecs.com/2018/11/11/Cohort%20Query%20Processing/"/>
+    <id>http://hexiecs.com/2018/11/11/Cohort Query Processing/</id>
+    <published>2018-11-11T14:37:00.000Z</published>
+    <updated>2019-09-06T15:34:46.248Z</updated>
+    
+    <content type="html"><![CDATA[<p>VLDB2017论文”Cohort Query Processing”</p><a id="more"></a><h1 id="Cohort-Query-Processing论文笔记"><a href="#Cohort-Query-Processing论文笔记" class="headerlink" title="Cohort Query Processing论文笔记"></a>Cohort Query Processing论文笔记</h1><p><a href="http://www.vldb.org/pvldb/vol10/p1-ooi.pdf" target="_blank" rel="noopener">论文链接</a></p><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>传统的数据库进行群体分析(cohort analysis)代价比较高，因为涉及到多张表的很多条记录。这篇文章提出了一种扩展的数据库系统来支持群体分析。通过对SQL扩展了3个新操作来实现的，并且设计了三种不同的群体分析请求处理的机制，其中两种采用了非侵入式的方法，第三种方式是为群体分析特别优化过的基于列存储(columnar)的机制。</p><h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>通过一个例子介绍了Cohort Analysis的好处，它能比直接分析一大堆数据得到更多的信息。群体分析：一种数据分析手段，能够得到在变化的社会环境中年龄对人类行为的影响，它允许我们把社会的改变和年龄分开，因此能提供更多信息。<br>cohort analytics中，分为3步：1）把用户分为群体 2）决定用户群体的年龄 3）计算每个群体的聚集。 第1步实施被称为cohort的操作来捕获社会不同的影响。社会科学家选择一个特定的动作e（被称为初始动作），基于用户执行这个动作e的时间（称为初始时间）把用户划分成不同的群体。一个用户的每个活动记录然后被赋予给这个用户属于的相同cohort。第2步，把每个cohort基于age划分成更小的子分区。一个记录t的age是这条记录和初始时间的间隔。最后，对每个cohort进行聚集行为。<br>然后作者举了一个游戏记录的例子来详细的说明第1步是怎么回事。<br>传统的群体分析有两个限制：1）分析整个数据集，因此没有机制能够提取一部分用户或记录来进行分析 2）只能使用时间属性来区分群体。此外，作者还举了几个例子说明传统的群体分析会受到限制。<br>这篇文章的贡献：  </p><ul><li>在DBMS的语义下定义了群体分析的问题  </li><li>介绍了一种模型化用户活动数据的扩展的群组分析方法，介绍了三个新的操作符可以用于扩展的关系和组成群体分析查询语句。  </li><li>构建了群体分析查询引擎，COHAHA，为群体分析实现了多种优化  </li><li>为比较COHANA和非侵入式的机制设计了基准测试研究<h2 id="群体分析的一种非侵入式方法"><a href="#群体分析的一种非侵入式方法" class="headerlink" title="群体分析的一种非侵入式方法"></a>群体分析的一种非侵入式方法</h2>作者举了一个群体分析的例子，然后用sql语句实现。可以看出用了很多join，性能低下，并且sql很复杂。即使采用MV的方法，也有一些问题，包括性能、存储空间、扩展性等等。<h2 id="群体分析基础"><a href="#群体分析基础" class="headerlink" title="群体分析基础"></a>群体分析基础</h2><h3 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h3>活动数据的集合称为活动关系的实例，也称为活动表。<br>一个活动表D是一个关系，包含属性Au，At，Ae，A1,…,An。Au是一个字符串唯一标识一个用户，Ae表示动作，At表示Au执行Ae的时间。其它属性都是标准的关系属性。并且，活动表D在（Au，At，Ae）上有主键限制。<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3>三个核心概念：初始动作（birth action）, 初始时间（birth time） 和年龄（age）.给定一个动作，初始时间是第一次执行这个动作的时间。一个动作e被称为初始动作，如果它被用来定义用户的初始时间。<h3 id="操作符"><a href="#操作符" class="headerlink" title="操作符"></a>操作符</h3>提出了两个新的操作符用来获得活动记录的子集，一个聚集操作符用来聚集每个（cohort，age）组合。<h4 id="操作符-1"><a href="#操作符-1" class="headerlink" title="操作符"></a><img src="http://wx1.sinaimg.cn/mw690/0060lm7Tly1fuviiuafvfj302g01ya9y.jpg" alt>操作符</h4></li></ul><p>这是个初始记录选择操作符，用来获得初始活动记录满足条件C的用户的活动记录。<br>比如我们想获得初始时在Australia执行launch动作的用户的活动记录，就可以这样写<br><img src="http://wx2.sinaimg.cn/mw690/0060lm7Tly1fuviotnmfrj30em02kjrg.jpg" alt></p><h4 id="操作符-2"><a href="#操作符-2" class="headerlink" title="操作符"></a><img src="http://wx4.sinaimg.cn/mw690/0060lm7Tly1fuvipsobc5j302o01wdfq.jpg" alt>操作符</h4><p>年龄选择操作符用来从活动表中返回所有的初始活动记录以及符合条件C的年龄活动记录。</p><h4 id="操作符-3"><a href="#操作符-3" class="headerlink" title="操作符"></a><img src="http://wx2.sinaimg.cn/mw690/0060lm7Tly1fuvitpdn6ej303o028wee.jpg" alt>操作符</h4><p>这个操作符产生群体聚集用两步：1）用户分群体 2）聚集活动记录。<br>第一步，把用户划分成群体，基于用户初始活动记录在指定属性集合上的映射。<br>在例子中，假设launch是初始动作，属性集合是{country}，玩家1，2，3都根据country属性的值被赋给不同的cohort。<br>在第2步，对于每个可能的群体和年龄的组合，选择属于的用户的关联的年龄活动记录，然后执行聚集函数。  </p><h3 id="操作符的属性"><a href="#操作符的属性" class="headerlink" title="操作符的属性"></a>操作符的属性</h3><p>第1，2个操作符满足交换律，因此我们可以把birth选择操作在查询中往下压，来优化查询。</p><h3 id="群体查询"><a href="#群体查询" class="headerlink" title="群体查询"></a>群体查询</h3><p>给定一个活动表D和上述三个操作符，一个查询可以表示成上述三个操作符的组合，这些操作符的birth action都是一样的。一个群体查询可以表示成下面的形式：<br><img src="http://wx4.sinaimg.cn/mw690/0060lm7Tly1fuvki9mjsrj30q805ut9f.jpg" alt></p><h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p>群体查询的方案可以在很多方面扩展，首先，可以把上述查询的结果和sql语句混合。另一个扩展是引入二元操作符(比如join，intersection)来操作多张表。</p><h3 id="群体查询操作符到SQL语句的映射"><a href="#群体查询操作符到SQL语句的映射" class="headerlink" title="群体查询操作符到SQL语句的映射"></a>群体查询操作符到SQL语句的映射</h3><p>展示了怎么把操作符用SQL语句表示</p><h2 id="COHANA查询引擎"><a href="#COHANA查询引擎" class="headerlink" title="COHANA查询引擎"></a>COHANA查询引擎</h2><p>为了用新设计的群体操作符支持群体分析，我们呈现了4种基于列存储的数据库的扩展：1）一个良好调节的水平存储格式用来持久化活动表 2）一个修改的表扫描操作符能够跳过不符合用户的年龄活动记录 3）一种cohort操作符的原生高效的实现 4）一个查询策划器能够利用cohort操作符的特性。</p><h3 id="活动表存储格式"><a href="#活动表存储格式" class="headerlink" title="活动表存储格式"></a>活动表存储格式</h3><p>用主键(Au,At,Ae)的顺序存储活动表的记录，这种存储布局有两个好的特性：1）相同用户的记录聚集在一起 2）每个用户的记录按照时间顺序存储。有这两个特性，我们可以高效的找到任何用户的任何初始动作的初始活动记录，只需要顺序扫描就好了。<br>我们采用了分块机制和多种压缩技术来加速cohort查询处理。首先把活动表水平分区成多个数据块，每个用户的活动记录被包含在恰好一个块中（这一步怎么做的还不清楚？）。然后，在每个数据块，活动记录按列存储。对于一个数据块中的每一列，我们基于列类型选择合适的压缩机制。<br>对于用户列Au，采用Run-Length-Encoding机制，也就是：Au的值被存储成三元组序列（u, f, n），u是Au中的用户，f是u在这一列第一次出现的位置，n是出现的次数。我们会看到采用这种方法，修改的表扫描器能够高效的跳过不符合条件的用户活动记录。<br>对于字符串列，采用一种两级的压缩机制。对于这样的列A，首先构建一个全局的字典，包含了A中出现的所有值，并且已经排好序和唯一化。A中的每个值都有一个全局id，代表这个值在字典中的位置。对于每个数据块，在这个块中的A的值的全局id构建成这个块的字典。这种两级的压缩机制使得可以高效的剪掉没有任何用户执行初始动作的数据块。对于一个给定动作e，首先用二分找到全局id，再把这个id在数据块字典中二分查找，找不到的话就可以跳过这个块了。<br>对于整数列也采用相似的二级压缩方法。<br>用上述的压缩方法，使得字符串和整数列都可以用整数数组来表示，因此可以用整数压缩技术来减少存储空间。具体思想是每个整数都采用固定长度的字节存储，这样支持高效的随机读写。</p><h3 id="群体查询的求值"><a href="#群体查询的求值" class="headerlink" title="群体查询的求值"></a>群体查询的求值</h3><p>这一节讲了怎么对一次查询请求求值。首先，生成一个逻辑的查询计划并对它进行优化，然后对每个数据块执行优化后的请求，最后合并每个块的结果。<br>我们介绍的查询计划由4个操作符组成，包括TableScan和上面说的3种操作符。跟其它基于列的数据库一样，映射操作是在预处理中做的：在请求准备阶段收集要求的列并把列传给TableScan操作符，来得到每列的值。<br>在查询计划中，根节点是聚集操作符，唯一的叶子节点是TableScan操作符。在他们之间是初始选择操作符和年龄选择操作符。<br>根据等式1，我们把初始选择操作符尽可能的下压，来优化查询。因为我们可以在4.3节看到，特别设计的TableScan实现可以高效的跳过那些初始活动记录不满足选择条件的用户的年龄活动记录。因此，尽可能的早做初始选择可以优化查询。<br>然后，我们利用Ae列的两级压缩机制来跳过没有用户执行初始动作e的数据块，然后对每个数据块执行查询。  </p><h3 id="TableScan操作符"><a href="#TableScan操作符" class="headerlink" title="TableScan操作符"></a>TableScan操作符</h3><p>我们为高效的群体分析处理扩展了标准的TableScan操作符。修改过的TableScan在压缩后的列上扫描，主要扩展了两个函数:GetNextUser()和SkipCurUser(). GetNextUser返回下一个用户的活动记录，SkipCurUser()跳过当前用户的活动记录。<br>TableScan实现如下:对于每个数据块，在查询初始话阶段，TableScan收集所有在请求中用到的列，并对每个列维护一个文件指针，初始时都指向列的起始位置。<br>GetNextUser()的实现：首先获取Au列的下一个三元组，然后让每个文件指针都向前走这个三元组相对于用户u的偏移。(注：这里因为是列存储的数据库，所以同一列的数据是顺序存放的，得到Au列的偏移后，其它列加上这个偏移就可以得到对应用户那行的数据)<br>SkipCurUser()的实现相似，当被调用时，首先计算当前用户剩余元组的个数，然后让指针前进相应的长度。  </p><h3 id="Cohort算法"><a href="#Cohort算法" class="headerlink" title="Cohort算法"></a>Cohort算法</h3><p>这一节开发了cohort操作符在提出的存储格式上的实现的算法。<br>第一个介绍的是初始选择操作符。没什么新奇之处，首先找到一个用户的初始元组，然后判断它满不满足条件，不满足的话调用SkipCurUser跳过当前用户，满足的话调用GetNext返回当前用户的元组，当取完后调用GetNextUser拿到下一个用户的数据块继续判断。<br>年龄选择操作符类似。<br>聚集操作符的实现。聚集操作符的含义是根据用户的初始活动元组在指定属性集上的映射来聚集用户的元组，并可以对每个年龄活动记录执行fA函数。实现时，维护两个hash表，一个装群体的大小，一个装群体的每个年龄(cohort,age)的聚集结果。  </p><h2 id="性能研究"><a href="#性能研究" class="headerlink" title="性能研究"></a>性能研究</h2><p>略</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;VLDB2017论文”Cohort Query Processing”&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Database" scheme="http://hexiecs.com/categories/Database/"/>
+    
+    
+      <category term="Paper" scheme="http://hexiecs.com/tags/Paper/"/>
+    
+      <category term="Database" scheme="http://hexiecs.com/tags/Database/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CephFS阅读笔记</title>
+    <link href="http://hexiecs.com/2018/11/11/CephFS/"/>
+    <id>http://hexiecs.com/2018/11/11/CephFS/</id>
+    <published>2018-11-11T14:12:00.000Z</published>
+    <updated>2019-09-06T15:34:36.286Z</updated>
+    
+    <content type="html"><![CDATA[<p>CephFS阅读笔记</p><a id="more"></a><h1 id="CephFS阅读笔记"><a href="#CephFS阅读笔记" class="headerlink" title="CephFS阅读笔记"></a>CephFS阅读笔记</h1><h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ol><li>和很多DFS一样都是元数据和数据分开存储，但是传统的DFS的数据分布信息都是在元数据里需要另外存储的，比如一个文件的块放在哪些机器哪些磁盘上，而Ceph的数据分布是通过一个伪随机函数称为CRUSH来完成的。</li><li>Ceph的数据不是直接存储在磁盘中的，而是存储在智能的OSD（对象存储设备）中的， 因此可以把数据备份、错误检测和恢复等交给OSD来完成而不是像HDFS这样是交给namenode来完成，这样可以减轻元数据机器的压力。</li><li>元数据机器是集群的，没有单点问题</li></ol><h2 id="分布式对象存储"><a href="#分布式对象存储" class="headerlink" title="分布式对象存储"></a>分布式对象存储</h2><p>大型的分布式系统有上千个设备组成，本质上是动态的。新的设备会被不断的部署，老设备会被移除，设备发生错误是正常情况而非异常。Ceph把数据迁移、备份、错误检测和恢复的责任交给OSD集群，可以充分利用每个OSD上的智能。对上层而言，OSDs集群被视为一个单独的逻辑对象存储和命名空间。</p><h3 id="CRUSH"><a href="#CRUSH" class="headerlink" title="CRUSH"></a>CRUSH</h3><p>利用CRUSH函数，可以不用存储文件的块分配列表。任何人都可以根据文件的内容得到文件的存储对象的名字和位置，简化了文件系统的设计，减少了元数据服务器的负载。<br>CRUSH算法的论文见：<a href="https://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf。" target="_blank" rel="noopener">https://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf。</a><br>为了解决不平衡和负载倾斜，Ceph采用的策略是随机的分布新数据，迁移已存在数据的随机部分到新的设备中，把移除设备的数据随机的重分配。这种随机的方法是鲁棒的，因为它在任何的负载下都工作的一样好。<br>Ceph首先把对象用一个简单的hash函数映射到placement groups(PGs)，然后PGs用CRUSH函数映射到OSD列表上。为了定位一个OSD，CRUSH函数只需要PG和一个OSD集群的map：这个map是对集群的抽象化和层次化的描述。这种方法有两个好处：Ceph任何组成部分（client、MDS，OSD）都可以通过这个函数很快的得到一个object位于哪个OSD；第二是map很少改变，因此几乎不需要互相交换有关的元数据。<br>这个集群map是跟集群的物理或逻辑组成对齐的，例如，你可能形成一个四层的层次结构包括：磁盘，装满OSD磁盘的机架，装满机架的柜子，很多行柜子。CRUSH基于放置规则把PGs映射到OSD，包括有多少个副本、在放置时有哪些限制。集群map也有一个epoch计数，每次改变map都会增加epoch，当client端访问时会带上epoch，server发现client端map过期时会在给client端的响应中带上最新的map。</p><h3 id="数据备份"><a href="#数据备份" class="headerlink" title="数据备份"></a>数据备份</h3><p>采用Primary-Copy技术，数据被备份到n个节点，Client写的时候，写主节点，主节点批量写到从节点，等都写到从节点的Cache中时，主节点给Client返回ACK，等从节点把Cache中的内容提交到此盘后，主节点向Client返回Commit。读的时候直接读主节点。<br>当Client收到ACK时，说明所有的节点都已经写到内存Cache了，这时候是可以容忍单个OSD出问题的（因为可以从其它OSD恢复）。但是默认情况下Client都会把写的内容Buffer存起来，防止所有的OSD最后提交到磁盘都失败，比如这些OSD都掉电了。</p><h3 id="错误检测"><a href="#错误检测" class="headerlink" title="错误检测"></a>错误检测</h3><p>每个OSD都会检测跟它共享PGs的OSD。如果一个OSD最近一段时间没有听到来自另一个OSD的响应，它就会显示地Ping一下。一个没有响应的OSD刚开始会被标记为down，它的任何primary责任都会被移到下一个OSD。如果它没有快速的恢复的话，就会被标记为out，然后一个新的OSD就会加入到它的每个PGs中来重新备份它的内容。<br>有一个小的monitor集群会收集错误报告，并且过滤出哪些是短暂的失败，哪些是全局的系统性失败。monitor为OSD提供了一个一致的集群map的访问，当map被更新时，会通知受影响的OSD增量的map更新，然后这些OSD会通过OSD间的通信将这个更新在集群内传播。</p><h3 id="恢复和集群更新"><a href="#恢复和集群更新" class="headerlink" title="恢复和集群更新"></a>恢复和集群更新</h3><p>为了加速恢复，OSD为它的所有objects都维护了一个版本号，并且为每个PGs都维护了一份最近更新的日志。当一个OSD收到一个更新的cluster map时，它会遍历它的所有本地存储的PGs，通过CRUSH函数找到哪个是它负责的PGs。如果一个PGs的成员发生了变化或者是一个OSD刚刚启动，它都会和PGs的其它成员交流。如果这个OSD是一个副本，它会向primary OSD提供它的当前PG版本号。如果一个OSD是primary的，它会收集当前（和以前的）副本的所有版本号，如果primary缺少PG的最新的状态，它会从当前或更早的副本中获取最近的PG改动的日志。然后primary会向副本发送PG日志的增量更新，然后primary可以开始工作了。然后OSDs就独立地从它的peers中获取它缺失的或者过期的object。</p><h2 id="元数据集群"><a href="#元数据集群" class="headerlink" title="元数据集群"></a>元数据集群</h2><p>Ceph利用一个特别的基于动态子树分区的元数据集群架构来适应性的、智能地把管理文件系统目录层次的任务分发给数十上百个元数据服务器。一个动态的目录层次分区在每个元数据服务器的负载中维护了局部性，促进了有效率的更新和聚合的预取操作，进而提升了通常情况下的性能。显著地，在元数据服务器的负载分配完全基于当前访问的模式，允许Ceph在任何负载下有效的利用元数据服务器资源，实现随着元数据服务器数量近乎线性的扩展。  </p><h3 id="元数据存储"><a href="#元数据存储" class="headerlink" title="元数据存储"></a>元数据存储</h3><p>Ceph因为可以不用存储文件的分配表，每个文件的元数据都很小，因此可以管理很多的文件。每个元数据服务器的数据是由lazily flushed日志刷到OSD上进行存储， 日志会吞并许多相对的更新，使得在最终刷到osd时，老的值已经被淘汰。<br>特别的，inode被嵌入到目录的数据中，这样一个读请求可以预取目录的文件，可以充分发挥目录的局部性。</p><h3 id="动态子树分区"><a href="#动态子树分区" class="headerlink" title="动态子树分区"></a>动态子树分区</h3><p>通常的分布式文件系统在处理元数据服务器集群管理的数据时有两种策略：1. 静态分配，通常由管理员分配每个服务器负责哪些文件和目录 2. 由hash函数来分配文件和目录，通常根据当前的负载来决定。由于机器的负载通常是动态的，第一种方式无法适应这种变化。而第二种方式无法利用目录的局部性。<br>Ceph的元数据服务器是采用基于动态子树分区的方法，具体做法是：元数据服务器会使用指数时间衰减的计数器来收集目录层次结构里元数据的热度。任何的操作都会增加受影响的节点和他的所有父节点以及祖先节点的计数器，因此元数据服务器看到的其实是带权重的目录树，描述了当前的负载分布。元数据服务器会周期性的比较负载值，然后迁移合适大小的目录树的子树来维持负载均衡。因为持久的存储是共享的，所以迁移其实就是namespace的事情，通过仔细构造namespace的锁，把内存中cache的相关内容转换到新的权限认证（这里是因为目录被迁移了，以前的元数据服务器记录的这个目录的一些权限认证信息肯定要转移到新的元数据服务器），这样做到对client端影响最小。在新的元数据服务器上新增的目录树信息要被记录到日志中来持久化，在权限认证信息从旧的服务器转移到新的机器过程中，采用类似2PC的做法，先在两台服务器上写上日志，然后再提交转移，来防止可能的失败。<br>还有一点优化就是元数据信息是在多台元数据机器上备份的，因为元数据信息包含比较多的内容，为了减少操作时的锁开销，把inode的内容分为三个组，安全（owner，mode），文件（size，mtime），不可变的（inode number，ctime，layout），不可变的字段是只读的，安全和文件这两组都拥有自己的锁和状态机。</p><h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>把目录分区可以很大程度上平衡负载，但是还是无法消除热点问题，比如很多client一起访问同一个目录或文件。Ceph的做法是把这个热点给分散到多个节点上。这样，ceph在通常情况下（没有出现热点时）都不会造成多余的开销，当出现热点时，通过将热点分布到多个节点上，当client来访问时，Ceph会返回给Client热点的所有副本的位置，如果是更新操作，会告诉Client应该去哪台机更新。读的Client就可以随便选一台机器进行读，写的Client就可以直接去指定的那台机进行写，这样就把Client都分布到任何的元数据服务器上，消除了潜在的热点问题。</p><h2 id="client同步"><a href="#client同步" class="headerlink" title="client同步"></a>client同步</h2><p>应用程序可以用标志控制自己的同步方式，可以由ceph来管理同步，这样每次读写都要阻塞到别的client已经读写完成，会有比较大的性能开销。也可以自己来管理，ceph提供了两个调用（lazyio_propagate和lazyio_synchronize），前者会把cache的给定范围的字节刷到object，后者保证前面propagate的结果会被后面的read知道，通过这两个调用，应用程序可以自己来管理同步。</p><h2 id="命名空间操作"><a href="#命名空间操作" class="headerlink" title="命名空间操作"></a>命名空间操作</h2><p>这块做了几个优化。readdir后跟一个stat操作是非常常见的场景比如ls -l。在readdir时就把目录的简要信息缓存起来，stat的时候就可以直接返回。这样可能会有一致性问题，但是极大的提升了性能。还有一个优化是如果一个stat操作作用在一个很多writer正在写的文件上，为了返回当前正确的size，mtime等，ceph会暂时中断所有的写，然后收集最新的size和time返回出去。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;CephFS阅读笔记&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/categories/Distribute/"/>
+    
+    
+      <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
+    
+      <category term="Paper" scheme="http://hexiecs.com/tags/Paper/"/>
+    
+      <category term="File System" scheme="http://hexiecs.com/tags/File-System/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>系统程序员成长计划读书笔记-第0，1，2章</title>
+    <link href="http://hexiecs.com/2017/09/17/%E3%80%8A%E7%B3%BB%E7%BB%9F%E7%A8%8B%E5%BA%8F%E5%91%98%E6%88%90%E9%95%BF%E8%AE%A1%E5%88%92%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0-%E7%AC%AC0%EF%BC%8C1%EF%BC%8C2%E7%AB%A0/"/>
+    <id>http://hexiecs.com/2017/09/17/《系统程序员成长计划》读书笔记-第0，1，2章/</id>
+    <published>2017-09-17T11:55:00.000Z</published>
+    <updated>2019-09-06T15:33:56.776Z</updated>
+    
+    <content type="html"><![CDATA[<p>《系统程序员成长计划》读书笔记-第0，1，2章</p><a id="more"></a><h1 id="0章"><a href="#0章" class="headerlink" title="0章"></a>0章</h1><p>语言、开发环境等，无需赘述</p><h1 id="1章"><a href="#1章" class="headerlink" title="1章"></a>1章</h1><h2 id="代码风格："><a href="#代码风格：" class="headerlink" title="代码风格："></a>代码风格：</h2><p>我觉得不一定要遵循作者的代码风格，但一定要和团队的习惯保持一致，自己的代码风格也要统一。代码要整洁、美观。</p><h2 id="封装："><a href="#封装：" class="headerlink" title="封装："></a>封装：</h2><p>这是面向对象程序设计的基本原则之一，可以隔离变化，降低复杂度。封装的方法：隐藏数据结构，隐藏内部函数（用static修饰），禁用全局变量，这三个方法都是实现封装的必要手段。</p><h2 id="通用链表："><a href="#通用链表：" class="headerlink" title="通用链表："></a>通用链表：</h2><ol><li><p>存值还是存指针？<br>存值时复制一份数据，保存数据的指针和长度。考虑到复制数据会带来性能开销，不考虑。只保存指向对象的指针，存取效率高。</p></li><li><p>让<code>C++</code>可以调用<br><code>C++</code>为了实现函数重载，编译器会把函数名重新编码。重新编码后就合原来的函数名不一致了，链接的时候就找不到相应的函数。为了让c++可以调用，需要在C的头文件中加上：  </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#ifdef __cplusplus</span><br><span class="line">extern &quot;C&quot;&#123;</span><br><span class="line">#endif    </span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure></li><li><p>通用链表的打印函数<br>链表中可能存放多种数据类型，如何实现一个通用的打印函数？实现多个，爱用哪个用哪个？这种做法会导致大量的重复代码，并且每次添加新的类型时，都要改实现。<br>比较好的方法：调用dlist的接口函数获取每一个位置的数据并打印出来。但是因为数据类型不确定，所以需要调用方自己提供一个打印的回调函数。</p></li><li><p>不要写重复的代码<br>重复的代码更容易出错，且经不起变化。所以累加链表中的整数和找出链表中的最大值这两个函数是非常类似的，都可以通过写一个遍历链表的函数然后通过回调函数来解决。</p></li></ol><h1 id="2章"><a href="#2章" class="headerlink" title="2章"></a>2章</h1><p>主要讲了代码写的又好又快的方法。<br>作者讲了自己的经验之谈，比如阅读自己的代码，避免常见错误。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《系统程序员成长计划》读书笔记-第0，1，2章&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="BookNotes" scheme="http://hexiecs.com/categories/BookNotes/"/>
+    
+    
+      <category term="BookNotes" scheme="http://hexiecs.com/tags/BookNotes/"/>
+    
+      <category term="系统程序员成长计划" scheme="http://hexiecs.com/tags/%E7%B3%BB%E7%BB%9F%E7%A8%8B%E5%BA%8F%E5%91%98%E6%88%90%E9%95%BF%E8%AE%A1%E5%88%92/"/>
+    
+  </entry>
   
   <entry>
     <title>C++11新特性学习</title>
@@ -40,6 +192,75 @@
   </entry>
   
   <entry>
+    <title>“protobuf开发者文档笔记”</title>
+    <link href="http://hexiecs.com/2017/08/12/protobuf/"/>
+    <id>http://hexiecs.com/2017/08/12/protobuf/</id>
+    <published>2017-08-12T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:24.416Z</updated>
+    
+    <content type="html"><![CDATA[<p>protobuf是谷歌的数据交换协议，这是开发者文档的笔记</p><a id="more"></a><h1 id="开发者文档笔记"><a href="#开发者文档笔记" class="headerlink" title="开发者文档笔记"></a>开发者文档笔记</h1><ol><li>protobuf向后兼容，增加新字段不影响旧的代码的解析过程，旧代码会忽略它</li><li>每个字段后面的数字(tag)用来在序列化后的二进制中标识这个字段。在1-15的tag占用1个字节（wiretype占3位，最高有效位被占用），所以常用字段要设置较小的tag</li><li>谨慎使用required，使用requied但是没有传值的话，可能message会被拒绝或扔掉，所以应该在应用层代码中自己校验完整性而不是使用required。</li><li>Reserved field：当删除.proto文件中的某字段时，这个字段的tag number 又能被继续使用，但是当其他用户引入了旧版本的.proto文件，就可能引起tag number冲突，所以推荐在删除某字段时，把该field的tag number和name都设置为reserved field，这样别人想再次使用时，编译器会报错。</li><li>Protocol buffer编译器会根据.proto文件生成get or set field value的函数，从一个输入流中parse 得到message 或把message序列化到输出流的函数。</li><li>更新一个消息类型的准则. <ul><li>不要改变已经存在的域的tag</li><li>任何添加的新字段应该是optional或者repeated类型. </li><li>Non-Required字段可以被去掉，只要tag number不要被reuse</li><li>int32, uint32, int64, uint64, and bool are all compatible </li><li>sint32 and sint64 are compatible</li><li>Embedded Message和bytes可以转换</li></ul></li><li>import definitions<br>当需要其它proto文件中的定义时，默认情况下import该文件，但不支持递归import。当把一个proto文件移到另一个位置时，不需要修改每一处对该proto文件的import，只需要在旧proto里用import public 指向新的位置，这样对旧proto的import就能依赖到新的proto。import文件的搜索路径由–proto_path标志指定</li></ol><h2 id="信息编码格式"><a href="#信息编码格式" class="headerlink" title="信息编码格式"></a>信息编码格式</h2><h3 id="基于128位varints编码"><a href="#基于128位varints编码" class="headerlink" title="基于128位varints编码"></a>基于128位varints编码</h3><ol><li>Varints是一种用一个或更多字节序列化整数的方式</li><li>Varints中的每个字节的最高有效位用来代表是否这个整数还有后续的字节，所以除了最后一个字节外，所有的字节的最高有效位都被设置。</li><li>从一个varints编码得到原始整数的方法：<br>比如300的编码为1010 1100 0000 0010<br>两个字节分别为 10101100        00000010<br>都去掉最高有效位  0101100   0000010<br>因为varints是把最低有效的字节组（去掉最高有效位后的7个字节为一个字节组，用来表示整数的值）排在前面，所以这里需要翻转一下，变为：<br>00000100101100, 即300. </li></ol><h3 id="消息结构"><a href="#消息结构" class="headerlink" title="消息结构"></a>消息结构</h3><ol><li>消息编码的时候，字段的field number（在.proto文件定义）和wire type(提供接下来的值所占长度的信息，比如wire type为0，代表这个值是int32类型，占4个字节，具体wire type的种类见<a href="https://developers.google.com/protocol-buffers/docs/encoding#structure)作为key，字段的值作为value，key+value一起存在编码后的数据中。Key是一个varints，按（filednumber" target="_blank" rel="noopener">https://developers.google.com/protocol-buffers/docs/encoding#structure)作为key，字段的值作为value，key+value一起存在编码后的数据中。Key是一个varints，按（filednumber</a>&lt;&lt;3|wire type）的方式存储，也就是说，key的最低三位就是wire type。</li><li>有符号整数：当值为负数时，有符号整数(sint32,sin64)和int32，int64不同，当使用int32和int64时，编码后的varints为10字节长，它被对待成一个很大的无符号整数。当使用sint32和sint64时，结果varints使用zigzag编码，这更有效率。</li><li>zigzag编码把有符号整数映射为无符号整数，使得有较小绝对值的数有较短的varints编码。<br>zigzag编码，每个n被映射为(n&lt;&lt;1)^(n&gt;&gt;31)，这里是算术右移（右移时填充符号位），所以对负数而言，（n&gt;&gt;31）时全1，对正数而言时全0.</li><li>非varint数字类型：double和fixed64为64位，float和fixed32为32位</li><li>String类型：value为字符串的长度后面跟着实际的字符串数据<br>嵌套消息:被当作和string一样来看待，tag+wire type 后面跟这个嵌套消息的字节数，然后跟嵌套消息的编码</li><li>[packed = true]选项：使repeated字段更有效的编码. </li></ol><h2 id="编译器生成c-代码"><a href="#编译器生成c-代码" class="headerlink" title="编译器生成c++代码"></a>编译器生成c++代码</h2><ol><li>使用‘—cpp_out=dir’参数调编译器，编译器会在dir生成c++代码。</li><li>编译器会把.proto替换成.pb.h和.pb.c，比如：<br>protoc –proto_path=src –cpp_out=build/gen src/foo.proto src/bar/baz.proto<br>编译器会生成build/gen/foo.pb.h,build/gen/foo.pb.cc,build/gen/bar/foo.pb.h,build/gen/bar/foo.pb.cc这四个文件，编译器会自动创建/build/gen/bar目录，但不会自己创造/build回/build/gen这两个目录。</li><li>package声明:如果.proto文件包含有package声明，文件的整个内容都会被放在相应的C++的命名空间中。</li><li>对于一个message，编译器会生成一个相应的具象类，继承google:protobuf::Message类。这个类没有未实现的纯虚函数。Message类的非纯虚函数可能不会被该具象类实现，取决于优化模式。默认情况下，该具象类为了最大的速度实现了所有方法的特定版本。<br>如果.proto文件包含了这一行：option optimize_for = CODE_SIZE,该具象类会实现最小数量的必要的函数，其余的函数由基于反射来实现。这显著减少了生成代码的大小。<br>如果.proto文件包含：option optimize_for = LIFE_RUNTIME,具象类会包含所有方法的快速实现，但是实现的是google::protobuf::MessageLite接口，只包含Message方法的一个子集。尤其是，他不支持反射和描述符。然而，在这个模式下，生成的代码只需要连接libprotobuf-lite.so,而不是libprotobuf.so，这个lite库要小的多。</li><li>Message接口定义了一些接口来检查，操作message，从一个流中parse或序列化到流。除此之外，Message还定义了一些其它的方法，比如<br>Foo(): Default constructor.<br>~Foo(): Default destructor.<br>Foo(const Foo&amp; other): Copy constructor.<br>Foo&amp; operator=(const Foo&amp; other): Assignment operator.<br>void Swap(Foo* other): Swap content with another message.<br>const UnknownFieldSet&amp; unknown_fields() const: Returns the set of unknown fields encountered while parsing this message.<br>UnknownFieldSet* mutable_unknown_fields(): Returns a pointer to the mutable set of unknown fields encountered while parsing this message.<br>static const Descriptor* descriptor(): Returns the type’s descriptor. This contains information about the type, including what fields it has and what their types are. This can be used with reflection to inspect fields programmatically.<br>static const Foo&amp; default_instance(): Returns a const singleton instance of Foo which is identical to a newly-constructed instance of Foo (so all singular fields are unset and all repeated fields are empty). Note that the default instance of a message can be used as a factory by calling its New() method.</li><li>一个Message可以在另一个Message内部定义，比如：Message Foo｛Message Bar｛｝｝，在这个例子中，编译器会生成两个类：Foo和Foo_Bar，然后在Foo内生成一个typedef:<br>Typedef Foo_Bar Bar。在其它件文中如果想使用这个嵌套类型，需要使用：Foo_Bar<br>编译器对每个字段都会生成一个整数常量，以k开头,然后是字段的名字（驼峰命名），最后是FieldNumber,比如optional int32 foo_bar = 5，编译器会生成static const int kFooBarFieldNumber = 5。</li><li>对于某个字段的const引用或指针，在下一次访问该字段的时候可能会失效。</li><li>对于单个的整数字段（Singular Numeric Type），比如：<br>optional int32 foo = 1；<br>required int32 foo = 1；<br>编译器会生成：<br>bool has_foo() const: Returns true if the field is set.<br>int32 foo() const: Returns the current value of the field. If the field is not set, returns the default value.<br>void set_foo(int32 value): Sets the value of the field. After calling this, has_foo() will return true and foo() will return value.<br>void clear_foo(): Clears the value of the field. After calling this, has_foo() will return false and foo() will return the default value.  </li><li>对于单独的string 字段，比如：<br>optional string foo = 1;<br>required string foo = 1;<br>optional bytes foo = 1;<br>required bytes foo = 1;<br>编译器会生成：bool has_foo() const: Returns true if the field is set.<br>const string&amp; foo() const: Returns the current value of the field. If the field is not set, returns the default value.<br>void set_foo(const string&amp; value): Sets the value of the field. After calling this, has_foo() will return true and foo() will return a copy of value.<br>void set_foo(const char* value): Sets the value of the field using a C-style null-terminated string. After calling this, has_foo() will return true and foo() will return a copy of value.<br>void set_foo(const char* value, int size): Like above, but the string size is given explicitly rather than determined by looking for a null-terminator byte.<br>string* mutable_foo(): Returns a pointer to the mutable string object that stores the field’s value. If the field was not set prior to the call, then the returned string will be empty (not the default value). After calling this, has_foo() will return true and foo() will return whatever value is written into  the given string.<br>void clear_foo(): Clears the value of the field. After calling this, has_foo() will return false and foo() will return the default value.<br>void set_allocated_foo(string* value): Sets the string object to the field and frees the previous field value if it exists. If the string pointer is not NULL, the message takes ownership of the allocated string object and has_foo() will return true. Otherwise, if the value is NULL, the behavior is the same as calling clear_foo().<br>string* release_foo(): Releases the ownership of the field and returns the pointer of the string object. After calling this, caller takes the ownership of the allocated string object, has_foo() will return false, and foo() will return the default value.  </li><li>重复的整数类型（Repeated Numeric Type）<br>比如：repeated int32 foo = 1;<br>编译器产生的accessor function为：<br>int foo_size() const: Returns the number of elements currently in the field.<br>int32 foo(int index) const: Returns the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>void set_foo(int index, int32 value): Sets the value of the element at the given zero-based index.<br>void add_foo(int32 value): Appends a new element to the field with the given value.<br>void clear_foo(): Removes all elements from the field. After calling this, foo_size() will return zero.<br>const RepeatedField<int32>&amp; foo() const: Returns the underlying RepeatedField that stores the field’s elements. This container class provides STL-like iterators and other methods.<br>RepeatedField<int32>* mutable_foo(): Returns a pointer to the underlying mutable RepeatedField that stores the field’s elements. This container class provides STL-like iterators and other methods.</int32></int32></li><li>Repeated string Type<br>比如：<br>repeated string foo = 1;<br>repeated bytes foo = 1;<br>编译器产生的accessor function为：<br>int foo_size() const: Returns the number of elements currently in the field.<br>const string&amp; foo(int index) const: Returns the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>void set_foo(int index, const string&amp; value): Sets the value of the element at the given zero-based index.<br>void set_foo(int index, const char* value): Sets the value of the element at the given zero-based index using a C-style null-terminated string.<br>void set_foo(int index, const char* value, int size): Like above, but the string size is given explicitly rather than determined by looking for a null-terminator byte.<br>string* mutable_foo(int index): Returns a pointer to the mutable string object that stores the value of the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>void add_foo(const string&amp; value): Appends a new element to the field with the given value.<br>void add_foo(const char* value): Appends a new element to the field using a C-style null-terminated string.<br>void add_foo(const char* value, int size): Like above, but the string size is given explicitly rather than determined by looking for a null-terminator byte.<br>string* add_foo(): Adds a new empty string element and returns a pointer to it.<br>void clear_foo(): Removes all elements from the field. After calling this, foo_size() will return zero.<br>const RepeatedPtrField<string>&amp; foo() const: Returns the underlying RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.<br>RepeatedPtrField<string>* mutable_foo(): Returns a pointer to the underlying mutable RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.    </string></string></li><li>Repeated Enum Type 跟numeric一致  </li><li>重复的嵌入式消息类型（Repeated embedded message type）<br>比如：repeated Bar foo = 1;<br>编译器产生的函数为：<br>int foo_size() const: Returns the number of elements currently in the field.<br>const Bar&amp; foo(int index) const: Returns the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>Bar* mutable_foo(int index): Returns a pointer to the mutable Bar object that stores the value of the element at the given zero-based index. Calling this method with index outside of [0, foo_size()) yields undefined behavior.<br>Bar* add_foo(): Adds a new element and returns a pointer to it. The returned Bar is mutable and will have none of its fields set (i.e. it will be identical to a newly-allocated Bar).<br>void clear_foo(): Removes all elements from the field. After calling this, foo_size() will return zero.<br>const RepeatedPtrField<bar>&amp; foo() const: Returns the underlying RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.<br>RepeatedPtrField<bar>* mutable_foo(): Returns a pointer to the underlying mutable RepeatedPtrField that stores the field’s elements. This container class provides STL-like iterators and other methods.  </bar></bar></li><li>Oneof Numeric Fields<br>For this oneof field definition:<br>oneof oneof_name {<br>int32 foo = 1;<br>…<br>}<br>The compiler will generate the following accessor methods:<br>bool has_foo() const (proto2 only): Returns true if oneof case is kFoo.<br>int32 foo() const: Returns the current value of the field if oneof case is kFoo. Otherwise, returns the default value.<br>void set_foo(int32 value):<br>If any other oneof field in the same oneof is set, calls clear_oneof_name().<br>Sets the value of this field and sets the oneof case to kFoo.<br>has_foo() (proto2 only) will return true, foo() will return value, and oneof_name_case() will return kFoo.<br>void clear_foo():<br>Nothing will be changed if oneof case is not kFoo.<br>If oneof case is kFoo, clears the value of the field and oneof case. has_foo() (proto2 only) will return false, foo() will return the default value and oneof_name_case() will return ONEOF_NAME_NOT_SET.</li><li>Map Fields  </li></ol><p>For this map field definition:  </p><p>map&lt;int32, int32&gt; weight = 1;<br>The compiler will generate the following accessor methods:  </p><p>const google::protobuf::Map&lt;int32, int32&gt;&amp; weight();: Returns an immutable Map.<br>google::protobuf::Map&lt;int32, int32&gt;* mutable_weight();: Returns a mutable Map.<br>A google::protobuf::Map is a special container type used in protocol buffers to store map fields. As you can see from its interface below, it uses a commonly-used subset of std::map and std::unordered_map methods.  </p><p>template&lt;typename Key, typename T&gt; {<br>class Map {<br>  // Member types<br>  typedef Key key_type;<br>  typedef T mapped_type;<br>  typedef … value_type;  </p><p>  // Iterators<br>  iterator begin();<br>  const_iterator begin() const;<br>  const_iterator cbegin() const;<br>  iterator end();<br>  const_iterator end() const;<br>  const_iterator cend() const;<br>  // Capacity<br>  int size() const;<br>  bool empty() const;  </p><p>  // Element access<br>  T&amp; operator[](const Key&amp; key);<br>  const T&amp; at(const Key&amp; key) const;<br>  T&amp; at(const Key&amp; key);  </p><p>  // Lookup<br>  int count(const Key&amp; key) const;<br>  const_iterator find(const Key&amp; key) const;<br>  iterator find(const Key&amp; key);  </p><p>  // Modifiers<br>  pair&lt;iterator, bool&gt; insert(const value_type&amp; value);<br>  template<class inputit><br>  void insert(InputIt first, InputIt last);<br>  size_type erase(const Key&amp; Key);<br>  iterator erase(const_iterator pos);<br>  iterator erase(const_iterator first, const_iterator last);<br>  void clear();  </class></p><p>  // Copy<br>  Map(const Map&amp; other);<br>  Map&amp; operator=(const Map&amp; other);<br>}<br>The easiest way to add data is to use normal map syntax, for example:  </p><p>std::unique_ptr<protoname> my_enclosing_proto(new ProtoName);<br>(*my_enclosing_proto-&gt;mutable_weight())[my_key] = my_value;<br>pair&lt;iterator, bool&gt; insert(const value_type&amp; value) will implicitly cause a deep copy of the value_type instance. The most efficient way to insert a new value into a google::protobuf::Map is as follows:  </protoname></p><p>T&amp; operator[](const Key&amp; key): map[new_key] = new_mapped;<br>Using google::protobuf::Map with standard maps  </p><p>google::protobuf::Map supports the same iterator API as std::map and std::unordered_map. If you don’t want to use google::protobuf::Map directly, you can convert a google::protobuf::Map to a standard map by doing the following:  </p><p>std::map&lt;int32, int32&gt; standard_map(message.weight().begin(),<br>                                    message.weight().end());<br>Note that this will make a deep copy of the entire map.  </p><p>You can also construct a google::protobuf::Map from a standard map as follows:  </p><p>google::protobuf::Map&lt;int32, int32&gt; weight(standard_map.begin(),   standard_map.end());<br>16:<br>Enumerations  </p><p>Given an enum definition like:  </p><p>enum Foo {<br>  VALUE_A = 0;<br>  VALUE_B = 5;<br>  VALUE_C = 1234;<br>}<br>The protocol buffer compiler will generate a C++ enum type called Foo with the same set of values. In addition, the compiler will generate the following functions:  </p><p>const EnumDescriptor* Foo_descriptor(): Returns the type’s descriptor, which contains information about what values this enum type defines.<br>bool Foo_IsValid(int value): Returns true if the given numeric value matches one of Foo’s defined values. In the above example, it would return true if the input were 0, 5, or 1234.<br>const string&amp; Foo_Name(int value): Returns the name for given numeric value. Returns an empty string if no such value exists. If multiple values have this number, the first one defined is returned. In the above example, Foo_Name(5) would return “VALUE_B”.<br>bool Foo_Parse(const string&amp; name, Foo* value): If name is a valid value name for this enum, assigns that value into value and returns true. Otherwise returns false. In the above example, Foo_Parse(“VALUE_C”, &amp;someFoo) would return true and set someFoo to 1234.<br>const Foo Foo_MIN: the smallest valid value of the enum (VALUE_A in the example).<br>const Foo Foo_MAX: the largest valid value of the enum (VALUE_C in the example).<br>const int Foo_ARRAYSIZE: always defined as Foo_MAX + 1.<br>Be careful when casting integers to proto2 enums. If an integer is cast to a proto2 enum value, the integer must be one of the valid values for than enum, or the results may be undefined. If in doubt, use the generated Foo_IsValid() function to test if the cast is valid. Setting an enum-typed field of a proto2 message to an invalid value may cause an assertion failure. If an invalid enum value is read when parsing a proto2 message, it will be treated as an unknown field. These semantics have been changed in proto3. It’s safe to cast any integer to a proto3 enum value as long as it fits into int32. Invalid enum values will also be kept when parsing a proto3 message and returned by enum field accessors.  </p><p>Be careful when using proto3 enums in switch statements. Proto3 enums are open enum types with possible values outside the range of specified symbols. Unrecognized enum values will be kept when parsing a proto3 message and returned by the enum field accessors. A switch statement on a proto3 enum without a default case will not be able to catch all cases even if all the known fields are listed. This could lead to unexpected behavior including data corruption and runtime crashes. Always add a default case or explicitly call Foo_IsValid(int) outside of the switch to handle unknown enum values.  </p><p>You can define an enum inside a message type. In this case, the protocol buffer compiler generates code that makes it appear that the enum type itself was declared nested inside the message’s class. The Foo_descriptor() and Foo_IsValid() functions are declared as static methods. In reality, the enum type itself and its values are declared at the global scope with mangled names, and are imported into the class’s scope with a typedef and a series of constant definitions. This is done only to get around problems with declaration ordering. Do not depend on the mangled top-level names; pretend the enum really is nested in the message class.</p><h2 id="oneof"><a href="#oneof" class="headerlink" title="oneof"></a>oneof</h2><p>Oneof</p><p>Given a oneof definition like this:<br>oneof oneof_name {<br>    int32 foo_int = 4;<br>    string foo_string = 9;<br>    …<br>}<br>The compiler will generate the following C++ enum type:</p><p>enum OneofNameCase {<br>  kFooInt = 4,<br>  kFooString = 9,<br>  ONEOF_NAME_NOT_SET = 0<br>}<br>In addition, it will generate this method:</p><p>OneofNameCase oneof_name_case() const: Returns the enum indicating which field is set. Returns ONEOF_NAME_NOT_SET if none of them is set.<br>The compiler also generates the following private method, which is used in oneof field accessors:</p><p>void clear_oneof_name(): Frees the object if the oneof field set uses a pointer (Message or String), and sets the oneof case to ONEOF_NAME_NOT_SET.</p><h2 id="解析和序列化"><a href="#解析和序列化" class="headerlink" title="解析和序列化"></a>解析和序列化</h2><p>bool SerializeToString(string* output) const;: serializes the message and stores the bytes in the given string. Note that the bytes are binary, not text; we only use the string class as a convenient container.</p><p>bool ParseFromString(const string&amp; data);: parses a message from the given string.</p><p>bool SerializeToOstream(ostream* output) const;: writes the message to the given C++ ostream.</p><p>bool ParseFromIstream(istream* input);: parses a message from the given C++ istream.</p><h2 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h2><p>利用反射，可以写不针对某个特定类型的message的代码，这在把message和其它的编码格式相互转换时非常有用，比如XML和JSON。</p><p>反射的API见<a href="https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.message#Message.Reflection" target="_blank" rel="noopener">https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.message#Message.Reflection</a></p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;protobuf是谷歌的数据交换协议，这是开发者文档的笔记&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="others" scheme="http://hexiecs.com/categories/others/"/>
+    
+    
+      <category term="protobuf" scheme="http://hexiecs.com/tags/protobuf/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux的unlink()、硬链接、软链接</title>
+    <link href="http://hexiecs.com/2017/04/02/unlink%20and%20hard%20link%20and%20soft%20link/"/>
+    <id>http://hexiecs.com/2017/04/02/unlink and hard link and soft link/</id>
+    <published>2017-04-01T16:56:00.000Z</published>
+    <updated>2019-09-06T15:34:06.924Z</updated>
+    
+    <content type="html"><![CDATA[<p>硬链接软链接是Linux文件系统很重要的概念</p><a id="more"></a>  <h1 id="unlink"><a href="#unlink" class="headerlink" title="unlink()"></a>unlink()</h1><p>Linux每个文件有自己的引用计数和链接计数，存放在inode结构体中。<br>unlink(char *pathname)函数会对pathname路径对应文件的链接计数减1，如果此时链接计数变为0，并且此文件的引用计数也为0，此文件内容就会被删除。<br>当open一个存在的文件时，文件的引用计数会加1，close一个文件时，引用计数会减1，但都不影响文件的链接计数。只有创建一个文件时，文件的引用计数会初始为1，调用link函数会为一个文件创建一个硬链接，该文件的链接计数相应加1。调用symlink函数创建一个软链接，不影响链接计数。</p><h1 id="硬链接和软链接的区别"><a href="#硬链接和软链接的区别" class="headerlink" title="硬链接和软链接的区别"></a>硬链接和软链接的区别</h1><p>硬链接是有着相同inode号仅文件名不同的文件，因此硬链接存在以下几点特性：</p><ul><li>文件有相同的 inode 及 data block；</li><li>只能对已存在的文件进行创建；</li><li>不能交叉文件系统进行硬链接的创建；</li><li>不能对目录进行创建，只可对文件创建；</li><li>删除一个硬链接文件并不影响其他有相同 inode 号的文件。  </li></ul><p>软链接与硬链接不同，若文件用户数据块中存放的内容是另一文件的路径名的指向，则该文件就是软连接。软链接就是一个普通文件，只是数据块内容有点特殊。软链接有着自己的inode号以及用户数据块。因此软链接的创建与使用没有类似硬链接的诸多限制：</p><ul><li>软链接有自己的文件属性及权限等；</li><li>可对不存在的文件或目录创建软链接；</li><li>软链接可交叉文件系统；</li><li>软链接可对文件或目录创建；</li><li>创建软链接时，链接计数 i_nlink 不会增加；</li><li>删除软链接并不影响被指向的文件，但若被指向的原文件被删除，则相关软连接被称为死链接（即 dangling link，若被指向路径文件被重新创建，死链接可恢复为正常的软链接）。<br>至于为什么硬链接不能对目录创建，是为了防止目录出现循换，这个网站的例子举得很好：<a href="http://ask.apelearn.com/question/5565。" target="_blank" rel="noopener">http://ask.apelearn.com/question/5565。</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;硬链接软链接是Linux文件系统很重要的概念&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://hexiecs.com/categories/Linux/"/>
+    
+    
+      <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>exit()和return的区别</title>
+    <link href="http://hexiecs.com/2017/04/01/Linux%20%20difference%20between%20exit()%20and%20return/"/>
+    <id>http://hexiecs.com/2017/04/01/Linux  difference between exit() and return/</id>
+    <published>2017-04-01T14:52:00.000Z</published>
+    <updated>2019-09-06T15:34:06.921Z</updated>
+    
+    <content type="html"><![CDATA[<p>其实是完全不同的两个东西，但很容易混淆</p><a id="more"></a><ol><li>exit()表示终止当前进程，return表示从当前函数返回。</li><li>exit()带参数表示终止状态，通常exit(0)表示正常终止, return 带一个参数表示返回值。</li><li>exit()执行完一些清理工作（终止处理程序，刷新输出流并关闭所有打开的流）后就调用_exit直接退出，不弹堆栈。而return会弹堆栈，返回到上级调用函数。这一点区别在执行vfork时很关键。</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;其实是完全不同的两个东西，但很容易混淆&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://hexiecs.com/categories/Linux/"/>
+    
+    
+      <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
     <title>C++对象初始化</title>
     <link href="http://hexiecs.com/2017/03/26/C++%20object%20initialize/"/>
     <id>http://hexiecs.com/2017/03/26/C++ object initialize/</id>
@@ -59,6 +280,223 @@
     
     
       <category term="c++" scheme="http://hexiecs.com/tags/c/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux getopt和getopt_long函数</title>
+    <link href="http://hexiecs.com/2017/03/26/getopt%20and%20getopt_long/"/>
+    <id>http://hexiecs.com/2017/03/26/getopt and getopt_long/</id>
+    <published>2017-03-26T08:05:00.000Z</published>
+    <updated>2019-09-06T15:34:06.923Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文讲讲Linux中用来处理命令行参数的函数getopt();  </p><a id="more"></a><h1 id="getopt"><a href="#getopt" class="headerlink" title="getopt"></a>getopt</h1><h2 id="函数参数"><a href="#函数参数" class="headerlink" title="函数参数"></a>函数参数</h2><p>函数原型为: </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int getopt(int argc, char * const argv[], const char *optstring);</span><br></pre></td></tr></table></figure><p>涉及的全局变量：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">extern char *optarg;</span><br><span class="line">extern int optind, opterr, optopt;</span><br></pre></td></tr></table></figure><p>包含的头文件：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br></pre></td></tr></table></figure><p>先说几个概念：  </p><ul><li>选项：指的是命令行参数中的<code>-</code>符号后面的字母，比如-a中a就是选项。</li><li>选项参数，指的是选项后面跟的值，有的选项后面必须有个值，有的选项后面没有值，有的选项后面可能有值。  </li></ul><p>getopt的函数声明中，argc为命令行参数的个数，argv[]为命令行参数列表，optstring为可能出现的选项的列表。<br>optstring:如果一个选项后面带有:，则该选项必须带选项参数。如果一个选项后面带有::,则该选项后面可能带参数。<br>如果一个选项后面可能带参数，那么在命令行中，该选项的参数跟该选项之间不能有空格，如果一个选项后面必须带参数，那么选项和它的参数之间可以有空格。<br>举个例子，比如现在的optarg为abc:d::，那么a和b后面没有参数，c后面必须有参数，d后面可能有参数。我们的命令行参数就可以是</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -a -b -c cvalue -ddvalue</span><br></pre></td></tr></table></figure><p>注意，d和dvalue之间没有空格。  </p><h2 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h2><ul><li>optarg: 指向当前选项的选项参数（如果有的话）</li><li>optind: 下一个选项的索引。<strong>getopt函数会重排命令行参数</strong>，所以选项都在argv数组的前面，当argv数组处理完毕后，如果optind &gt;= argc, 就说明出现了过多的选项。</li><li>opterr: 将opterr设为0，getopt将不打印错误信息。</li><li>optopt: 当getopt遇到一个未知的选项，或一个选项缺少要求的参数，optopt存储该选项。</li><li>返回值：函数的返回值为当前处理的选项，，如果getopt在optstring中找不到该选项或是缺少选项参数，getopt返回’?’,并且打印错误信息。如果optstring的第一个字母是’:’, 那么当缺少选项参数时，getopt返回’:’而不是’?’。如果不再有可识别的选项，getopt返回-1。</li></ul><h1 id="getopt-long"><a href="#getopt-long" class="headerlink" title="getopt_long"></a>getopt_long</h1><p>getopt_long函数可以处理长选项，就像–help这种，选项长度大于1个字母，需要以–开头。<br>函数声明：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;getopt.h&gt;</span><br><span class="line"></span><br><span class="line">int getopt_long(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex);</span><br></pre></td></tr></table></figure><p>前三个参数和getopt一样，第四个参数longopts指向option结构体数组，struct option定义如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct option&#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    int has_arg;</span><br><span class="line">    int *flag;</span><br><span class="line">    int val;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><ul><li>const char *name: 选项的名字</li><li>int has_arg：选项是否有参数。它的值为以下三种</li></ul><table><thead><tr><th>符号常量</th><th>数值</th><th>含义</th></tr></thead><tbody><tr><td>no_argument</td><td>0</td><td>选项没有参数</td></tr><tr><td>required_argument</td><td>1</td><td>选项需要参数</td></tr><tr><td>optional_argument</td><td>2</td><td>选项参数可选</td></tr><tr><td>- int *flag 和 int val: 如果flag为NULL， 那么<code>getopt_long</code>返回本结构中val的值；如果flag不为NULL，那么将flag指向的变量设为val的值，<code>getopt_long</code>返回0.通过flag和val,我们就可以在处理命令行参数的同时自动设置标记变量。</td><td></td><td></td></tr></tbody></table><p>参考文章：<br><a href="http://www.cnblogs.com/oloroso/p/4616282.html" target="_blank" rel="noopener">http://www.cnblogs.com/oloroso/p/4616282.html</a><br><a href="http://www.cppblog.com/flyonok/archive/2010/09/04/125884.aspx" target="_blank" rel="noopener">http://www.cppblog.com/flyonok/archive/2010/09/04/125884.aspx</a><br><a href="https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html" target="_blank" rel="noopener">https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html</a></p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文讲讲Linux中用来处理命令行参数的函数getopt();  &lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://hexiecs.com/categories/Linux/"/>
+    
+    
+      <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>socket编程中close()和shutdown()的区别</title>
+    <link href="http://hexiecs.com/2017/03/22/difference%20between%20close()%20and%20shutdown()%20when%20TCP%20terminate/"/>
+    <id>http://hexiecs.com/2017/03/22/difference between close() and shutdown() when TCP terminate/</id>
+    <published>2017-03-22T15:58:00.000Z</published>
+    <updated>2019-09-06T15:34:15.564Z</updated>
+    
+    <content type="html"><![CDATA[<p>网络编程中终止连接时close和shutdown的区别。  </p><a id="more"></a><ol><li>shutdown可以指定在某个方向上终止连接，通过指定标志：SHUT_RD, SHUT_WR, SHUT_RDWR。比如指定SHUT_WR后可以继续读数据，但不能写入了。而close是两个方向上终止连接。</li><li>close会将描述符的引用计数减一，如果引用计数变为0就关闭描述符，发送FIN。而shutdown不管引用计数，直接发送FIN终止连接。所以在多线程下操作同一个socket描述符下，一个线程调用shutdown会使其他线程无法使用这个描述符，而调用close就不会影响到其他线程。</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;网络编程中终止连接时close和shutdown的区别。  &lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="Network Programming" scheme="http://hexiecs.com/tags/Network-Programming/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>TCP连接建立和终止小结</title>
+    <link href="http://hexiecs.com/2017/03/21/TCP%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E5%92%8C%E7%BB%88%E6%AD%A2%E5%B0%8F%E7%BB%93/"/>
+    <id>http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.563Z</updated>
+    
+    <content type="html"><![CDATA[<p>TCP协议的笔记之一</p><a id="more"></a><h2 id="TCP连接建立（三次握手）"><a href="#TCP连接建立（三次握手）" class="headerlink" title="TCP连接建立（三次握手）"></a>TCP连接建立（三次握手）</h2><p>如图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%BB%88%E6%AD%A2.PNG" alt></p><ol><li>请求端发送一个SYN到服务器的相应端口，以及初始序号ISN</li><li>服务器发送包含服务器的初始序号的SYN作为应答，同时确认序号设置为客户的ISN+1</li><li>客户将确认序号设置为服务器的ISN+1</li></ol><h4 id="最大报文段长度（MSS）"><a href="#最大报文段长度（MSS）" class="headerlink" title="最大报文段长度（MSS）"></a>最大报文段长度（MSS）</h4><ul><li>连接建立时，连接的双方都要通告各自的MSS。当建立一个连接时，每一方都有通告它期望接收的MSS选项。如果一方不接收来自另一方的MSS值，则MSS就定为576字节。对于一个以太网，MSS可达1460字节（1460 + IP首部20 + TCP首部20 = 1500）。如果目的IP地址是“非本地的”， MSS通常的默认值是536。  </li><li>MSS让主机限制另一端发送数据报的长度，加上主机也能控制它发送数据报的长度，这将使以较小MTU连接到一个网络的主机避免分段。  </li><li>如果两端的主机都连接到以太网上，都采用536的MSS, 但中间网络采用296的MTU，也将会出现分段， 使用路径上的MTU发现机制是关于这个问题的唯一方法。</li></ul><h4 id="同时打开"><a href="#同时打开" class="headerlink" title="同时打开"></a>同时打开</h4><p>一般情况下，连接建立时是一方发送SYN，另一方发送SYN+ACK， 但极个别情况下，有可能两个应用程序几乎同时向对方发送SYN，这就叫做同时打开。同时打开需要双方都使用彼此熟知的端口，而不是一般情况下只需要客户使用服务器的知名端口。<br>TCP的同时打开的状态变迁图如下：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80.PNG" alt="image"><br>两端几乎同时发送SYN,并进入SYN_SENT状态。当每一端收到SYN时，状态变为SYN_RCVD，同时它们都再发SYN并对收到的SYN进行确认。当双方都收到SYN及相应的ACK时，状态都变迁为ESTABLISHED。</p><h4 id="呼入连接请求队列"><a href="#呼入连接请求队列" class="headerlink" title="呼入连接请求队列"></a>呼入连接请求队列</h4><p>有可能出现当服务器在创建一个新的进程时，或操作系统正忙于处理优先级更高的进程时，到达多个连接请求，当服务器处于忙时，TCP是如何处理这些呼入的连接请求？<br>在伯克利的TCP实现中采用以下规则：  </p><ol><li>正等待连接请求的一端有一个固定长度的连接队列，该队列中的连接已被TCP接受（即三次握手已完成），但还没有被应用层所接受。注意区分TCP接受一个连接是将其放入队列，而应用层是将其从该队列中移出。</li><li>应用层将指明该队列的最大长度，这个值称为积压值。它的取值范围是0~5之间的整数。</li><li>当一个连接请求到达时，TCP使用一个算法，来确定是否接收这个连接。</li><li>如果对于新的连接请求，该TCP监听的端点的连接队列中还有空间，TCP模块将对这个SYN进行确认并完成连接的建立。但应用层只有在三次握手中的第三个报文段才能知道这个新连接。另外，当客户进程的主动打开成功但服务器的应用层还不知道这个新的连接时，它可能会认为服务器进程已经准备好接收数据了（如果发生这种情况，服务器的TCP仅将接收的数据放入缓冲队列）。</li><li>如果对于新的连接请求，连接队列已没有空间，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），如果应用层不能及时接受已被TCP接受的连接，这些连接可能占满整个连接队列，客户的主动打开将最终超时。<br>当队列已满时，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），因为这是一个软错误，而不是一个硬错误。通常队列已满是由于应用程序或操作系统忙造成的，这样可防止应用程序对传入的连接进行服务。这个条件在很短的时间内可以改变。但如果服务器的TCP以系统复位作为响应，客户进程的主动打开将被废弃。由于不应答SYN，服务器程序迫使客户TCP随后重传SYN,以等待连接队列有空间接受新的连接。<h2 id="TCP连接终止（四次握手）"><a href="#TCP连接终止（四次握手）" class="headerlink" title="TCP连接终止（四次握手）"></a>TCP连接终止（四次握手）</h2>既然一个TCP连接是全双工的（即数据在两个方向上都能传递），因此每个方向都必须单独进行关闭。这原则就是当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向上的连接。当一端收到一个FIN，它必须通知应用层另一端已经终止了那个方向的数据传送。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E7%BB%88%E6%AD%A2.PNG" alt="image"><h4 id="半关闭"><a href="#半关闭" class="headerlink" title="半关闭"></a>半关闭</h4>TCP提供了连接的一端在结束它的发送后还能接收来自另一端数据的能力。这就是所谓的半关闭。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%8D%8A%E5%85%B3%E9%97%AD.PNG" alt="image"><h4 id="2MSL等待状态"><a href="#2MSL等待状态" class="headerlink" title="2MSL等待状态"></a>2MSL等待状态</h4>TIME_WAIT状态也称为2MSL等待状态。每个具体TCP实现必须选择一个报文段最大生存时间MSL。它是任何报文段被丢弃前在网络内的最长时间。<br>为什么要有TIME_WAIT状态？  </li></ol><ul><li>因为终止连接的一方发送的最后的一个ACK可能会丢失，另一端超时并重发最后的FIN， 这样终止连接的一方可以再次发送最后的ACK  </li></ul><p>为什么是2MSL？</p><ul><li>最后一个ACK存在的时间最多为MSL，如果ACK丢失，然后接收端超时并重发FIN，这个FIN最多存在时间又是MSL，而TIME_WAIT状态需要等待这个连接中的所有分组都消失，所以需要等待2ML</li><li>2MSL时间后这个连接的所有分组都会消失，不会干扰到接下来相同socket对建立的连接。</li></ul><p>TCP在2MSL等待期间，定义这个连接的插口（客户的IP地址和端口号，服务器的IP地址和端口号）不能再被使用，这个连接只能在2MSL结束后才能再被使用。如果我们终止一个已经建立连接的服务器程序，并试图立即重启这个服务器程序，服务器程序不能把它的这个熟知端口赋值给它的端点，因为那个端口是出于2MSL连接的一部分。<br>我们可以以-A标记来设置SO_REUSEADDR，这样可以使服务器程序使用之前的端口，但它不能主动打开之前的相同端口的客户程序，应为那个连接的插口对仍处于2MSL等待状态。但我们如果让那个客户程序来主动打开这个服务器程序是会成功的，因为大多数的伯克利实现支持一个新的连接请求到达仍处于TIME_WAIT状态的连接。</p><h4 id="复位报文段"><a href="#复位报文段" class="headerlink" title="复位报文段"></a>复位报文段</h4><p>一般说来，无论何时一个报文段发往指定的连接出现错误，TCP都会发出一个复位报文段。<br>产生复位的几种常见情况是：</p><ul><li>到不存在的端口的连接请求；</li><li>异常终止一个连接；</li><li>检测半打开连接。<br>如果一端已经关闭或异常终止连接而另一方却还不知道，我们将这样的连接成为半打开连接。<h4 id="同时关闭"><a href="#同时关闭" class="headerlink" title="同时关闭"></a>同时关闭</h4>两边都执行主动关闭也是有可能的，TCP协议也允许这样的同时关闭。<br>如下图：  </li></ul><h2 id="部分问题"><a href="#部分问题" class="headerlink" title="部分问题"></a>部分问题</h2><ol><li>为什么服务器对客户FIN的ACK不和自己的FIN合并（即终止连接不是三次握手）？<br>因为发送客户FIN的ACK通常是收到FIN就立刻发送，但这是服务器不一定要关闭自己这端的连接，还可能需要发送数据（半关闭），所以不一定要发送FIN。</li><li>分析处于TIME_WAIT状态的主机收到使其进入此状态的重复的FIN时所发生的情况<br>发送ACK,重启定时器。</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;TCP协议的笔记之一&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
+    
+      <category term="连接" scheme="http://hexiecs.com/tags/%E8%BF%9E%E6%8E%A5/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>TCP数据传输小结</title>
+    <link href="http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E5%B0%8F%E7%BB%93/"/>
+    <id>http://hexiecs.com/2017/03/21/TCP的数据传输小结/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.562Z</updated>
+    
+    <content type="html"><![CDATA[<p>tcp协议的笔记之一</p><a id="more"></a><h1 id="TCP的交互数据流"><a href="#TCP的交互数据流" class="headerlink" title="TCP的交互数据流"></a>TCP的交互数据流</h1><h3 id="交互式输入"><a href="#交互式输入" class="headerlink" title="交互式输入"></a>交互式输入</h3><p>通常每一个交互按键都会产生一个数据分组，也就是说，每次从客户传到服务器的是一个字节的按键（而不是每次一行）</p><h3 id="经受时延的确认"><a href="#经受时延的确认" class="headerlink" title="经受时延的确认"></a>经受时延的确认</h3><p>通常TCP在接受到数据时并不立即发送ACK；相反，它推迟发送，以便将ACK与需要沿该方向发送的数据一起发送。绝大多数实现采用的时延为200ms，也就是说，TCP将以最大200ms的时延等待是否有数据一起发送<br>TCP使用了一个200ms的定时器，该定时器以相对于内核引导的200ms固定时间溢出。由于将要确认的数据是随机到达的，TCP在内核的200ms定时器的下一次溢出时得到通知。  </p><h3 id="Nagle算法"><a href="#Nagle算法" class="headerlink" title="Nagle算法"></a>Nagle算法</h3><p>该算法要求一个TCP连接上最多只能有一个未被确认的未完成的分组，在该分组的确认到来之前，不能发送其他的小分组。相反，TCP收集这些小分组，并在确认到来时以一个分组的方式发出去。该算法的优越之处在于它是自适应的：确认到达的越快，数据也就发的越快。</p><h1 id="TCP的成块数据流"><a href="#TCP的成块数据流" class="headerlink" title="TCP的成块数据流"></a>TCP的成块数据流</h1><h3 id="正常数据流"><a href="#正常数据流" class="headerlink" title="正常数据流"></a>正常数据流</h3><p>通常使用隔一个报文段确认的策略。即当一个报文段被处理时，连接被标记为产生一个经受时延的确认。如果时延定时器溢出前，下一个报文段被处理完，那么（两个报文段的）确认立刻被发送。<br>使用TCP的滑动窗口协议时，接收方不必确认每一个收到的分组。在TCP中，ACK是累积的——它们表示接收方已经正确收到了一直到确认序号减1的所有字节。</p><h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>如图：<img src="http://oiyc9c736.bkt.clouddn.com/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3.PNG" alt="image"><br>提供的窗口即接收方通告的窗口，当发送方收到一个确认时，窗口的左边沿向右移动，窗口的右边沿是否向右移动取决于ACK中通告的窗口大小，窗口大小是相对于左边沿的。另外，窗口的左边沿不可能向左移动，因为那样意味着收到了一个重复的ACK，窗口的右边沿不可能向左移动。</p><h3 id="PUSH标志"><a href="#PUSH标志" class="headerlink" title="PUSH标志"></a>PUSH标志</h3><p>发送方使用该标志通知接收方将所收到的数据全部提交给接收进程。这里的数据包括与PUSH一起传送的数据以及接收方TCP已经为接收进程收到的其他数据。<br>如果待发送的数据将清空发送缓存，则大多数的源于伯克利的实现能够自动设置PUSH标志。这意味着我们能够观察到每个应用数据写的数据均被设置了PUSH标志，因为数据在写的时候就立即被发送。</p><h3 id="慢启动"><a href="#慢启动" class="headerlink" title="慢启动"></a>慢启动</h3><p>如果在发送方和接收方之间存在多个路由器和速率较慢的链路时，采用发送方一开始便向网络发送多个报文段就有可能出现一些问题。一些中间的路由器必须缓存分组，并有可能耗尽存储器的空间。<br>慢启动算法通过观察到新的分组进入网络的速率应该与另一端返回的确认的速率相同而工作。<br>慢启动为发送方的TCP增加了另一个窗口：拥塞窗口，当与另一个网络的主机建立TCP连接时，拥塞窗口初始化为1个报文段。每收到一个ACK，拥塞窗口就增加一个报文段。发送方取拥塞窗口和通告窗口中的最小值作为发送上限。拥塞窗口是发送方使用的流量控制，而通告窗口是接收方使用的流量控制。拥塞窗口是一种指数增加的关系。</p><h3 id="带宽时延乘积"><a href="#带宽时延乘积" class="headerlink" title="带宽时延乘积"></a>带宽时延乘积</h3><p>可以计算通道的容量为：<br>capacity(bit) = bandwidth(b/s) x round-trip time(s)<br>一般称为带宽时延乘积。这个值依赖于网络速率和两端的RTT。接收方的通告窗口必须不少于这个数目，因为通告窗口限制了发送方能够发送的段的数目。</p><h3 id="紧急方式"><a href="#紧急方式" class="headerlink" title="紧急方式"></a>紧急方式</h3><p>TCP提供了“紧急方式”， 它使一端可以告诉另一端有些具有某种方式的“紧急数据”已经被放置在普通数据流中。另一端被通知这个紧急数据已经被放置在普通数据流中，由接收方决定如何处理。<br>可以通过设置TCP首部中的两个字段来发出这种从一端到另一端的紧急数据已经被放置在数据流中的通知。URG比特被置1，并且一个16bit的紧急指针被置为一个正的偏移量，该偏移量必须与TCP首部的序号相加，以便得出紧急数据的最后一个字节的序号。<br>即使接收窗口为0，也能发送紧急数据。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;tcp协议的笔记之一&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
+    
+      <category term="数据传输" scheme="http://hexiecs.com/tags/%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>TCP成块数据流</title>
+    <link href="http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%88%90%E5%9D%97%E6%95%B0%E6%8D%AE%E6%B5%81/"/>
+    <id>http://hexiecs.com/2017/03/21/TCP的成块数据流/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.561Z</updated>
+    
+    <content type="html"><![CDATA[<p>TCP协议的笔记之一</p><a id="more"></a><h1 id="TCP的成块数据流"><a href="#TCP的成块数据流" class="headerlink" title="TCP的成块数据流"></a>TCP的成块数据流</h1><h3 id="正常数据流"><a href="#正常数据流" class="headerlink" title="正常数据流"></a>正常数据流</h3><p>通常使用隔一个报文段确认的策略。即当一个报文段被处理时，连接被标记为产生一个经受时延的确认。如果时延定时器溢出前，下一个报文段被处理完，那么（两个报文段的）确认立刻被发送。<br>使用TCP的滑动窗口协议时，接收方不必确认每一个收到的分组。在TCP中，ACK是累积的——它们表示接收方已经正确收到了一直到确认序号减1的所有字节。</p><h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>如图：<img src="http://oiyc9c736.bkt.clouddn.com/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3.PNG" alt="image"><br>提供的窗口即接收方通告的窗口，当发送方收到一个确认时，窗口的左边沿向右移动，窗口的右边沿是否向右移动取决于ACK中通告的窗口大小，窗口大小是相对于左边沿的。另外，窗口的左边沿不可能向左移动，因为那样意味着收到了一个重复的ACK，窗口的右边沿不可能向左移动。</p><h3 id="PUSH标志"><a href="#PUSH标志" class="headerlink" title="PUSH标志"></a>PUSH标志</h3><p>发送方使用该标志通知接收方将所收到的数据全部提交给接收进程。这里的数据包括与PUSH一起传送的数据以及接收方TCP已经为接收进程收到的其他数据。<br>如果待发送的数据将清空发送缓存，则大多数的源于伯克利的实现能够自动设置PUSH标志。这意味着我们能够观察到每个应用数据写的数据均被设置了PUSH标志，因为数据在写的时候就立即被发送。</p><h3 id="慢启动"><a href="#慢启动" class="headerlink" title="慢启动"></a>慢启动</h3><p>如果在发送方和接收方之间存在多个路由器和速率较慢的链路时，采用发送方一开始便向网络发送多个报文段就有可能出现一些问题。一些中间的路由器必须缓存分组，并有可能耗尽存储器的空间。<br>慢启动算法通过观察到新的分组进入网络的速率应该与另一端返回的确认的速率相同而工作。<br>慢启动为发送方的TCP增加了另一个窗口：拥塞窗口，当与另一个网络的主机建立TCP连接时，拥塞窗口初始化为1个报文段。每收到一个ACK，拥塞窗口就增加一个报文段。发送方取拥塞窗口和通告窗口中的最小值作为发送上限。拥塞窗口是发送方使用的流量控制，而通告窗口是接收方使用的流量控制。拥塞窗口是一种指数增加的关系。</p><h3 id="带宽时延乘积"><a href="#带宽时延乘积" class="headerlink" title="带宽时延乘积"></a>带宽时延乘积</h3><p>可以计算通道的容量为：<br>capacity(bit) = bandwidth(b/s) x round-trip time(s)<br>一般称为带宽时延乘积。这个值依赖于网络速率和两端的RTT。接收方的通告窗口必须不少于这个数目，因为通告窗口限制了发送方能够发送的段的数目。</p><h3 id="紧急方式"><a href="#紧急方式" class="headerlink" title="紧急方式"></a>紧急方式</h3><p>TCP提供了“紧急方式”， 它使一端可以告诉另一端有些具有某种方式的“紧急数据”已经被放置在普通数据流中。另一端被通知这个紧急数据已经被放置在普通数据流中，由接收方决定如何处理。<br>可以通过设置TCP首部中的两个字段来发出这种从一端到另一端的紧急数据已经被放置在数据流中的通知。URG比特被置1，并且一个16bit的紧急指针被置为一个正的偏移量，该偏移量必须与TCP首部的序号相加，以便得出紧急数据的最后一个字节的序号。<br>即使接收窗口为0，也能发送紧急数据。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;TCP协议的笔记之一&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
+    
+      <category term="数据传输" scheme="http://hexiecs.com/tags/%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>TCP服务和首部</title>
+    <link href="http://hexiecs.com/2017/03/21/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/"/>
+    <id>http://hexiecs.com/2017/03/21/TCP服务和首部/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.560Z</updated>
+    
+    <content type="html"><![CDATA[<p>TCP协议的笔记</p><a id="more"></a><h3 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h3><ol><li>应用程序会被TCP分割成数据段，而UDP不分割。</li><li>TCP有超时重传和确认</li><li>如果检验和出错将丢弃</li><li>IP数据包可能会失序或者重复，所以TCP会处理</li><li>滑动窗口来进行流量控制</li><li>对字节流的内容不做任何解释</li></ol><h3 id="首部"><a href="#首部" class="headerlink" title="首部"></a>首部</h3><p>tcp首部如果不带可选字段，为20字节  </p><ol><li>16位的源端口号和目的端口号以及ip数据报首部的源和目的ip地址用来唯一表示一对主机。</li><li>序号标识这个报文段的第一个数据字节，确认序号表示希望对端发送的数据字节。</li><li>4位首部长度最大为15，表示最大长度为15＊4=60字节</li><li>检验和包括了tcp首部和数据</li><li>只有当URG位设置时紧急指针才有效，紧急指针是一个正的偏移量，和序号相加表示紧急数据中最后一个字节的序号。</li><li>最常见的可选字段是MSS，最长报文大小，指明本端所能接收的最大的报文大小。</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;TCP协议的笔记&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
+    
+      <category term="服务" scheme="http://hexiecs.com/tags/%E6%9C%8D%E5%8A%A1/"/>
+    
+      <category term="报头" scheme="http://hexiecs.com/tags/%E6%8A%A5%E5%A4%B4/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>“[转]网络编程中IPV4和IPV6互相通信”</title>
+    <link href="http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/"/>
+    <id>http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.559Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p><a id="more"></a>  <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p><h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li><li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li><li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li><li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li></ol><h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li><li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li><li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li></ol><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p><p>参考资料：<br>《Unix 网络编程》</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文为转载文章，&lt;a href=&quot;http://blog.csdn.net/chenhanzhun/article/details/41944195&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;原文地址&lt;/a&gt;  &lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="Network Programming" scheme="http://hexiecs.com/tags/Network-Programming/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>在ovs-dpdk中解析自定义报头</title>
+    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8OVS-DPDK%E4%B8%AD%E8%A7%A3%E6%9E%90%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8A%A5%E5%A4%B4/"/>
+    <id>http://hexiecs.com/2017/03/21/在OVS-DPDK中解析自定义报头/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.565Z</updated>
+    
+    <content type="html"><![CDATA[<p>在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头</p><a id="more"></a><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我自定义了一个报头，名叫rev header, 假设其内容为 </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct rev_header&#123;  </span><br><span class="line">int a;  </span><br><span class="line">int b;  </span><br><span class="line">int c;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>现在我想把它插入到数据包L3层和L4层之间，并在OVS中解析这个报头，这篇文章讲一下这个解析的过程。  </p><h3 id="数据通路"><a href="#数据通路" class="headerlink" title="数据通路"></a>数据通路</h3><p>这篇文章讲解了OVS-DPDK的数据通路：<a href="http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/" target="_blank" rel="noopener">http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/</a><br>在OVS-DPDK中，DPDK处理过的数据包，会传给OVS的<code>miniflow_extract</code>函数进行解析，提取key，进行后续的流表匹配。所以我们在<code>miniflow_extract</code>函数中提取我们的自定义报头。  </p><h3 id="添加代码"><a href="#添加代码" class="headerlink" title="添加代码"></a>添加代码</h3><p>在<code>miniflow_extract</code>中，OVS会解析数据包中的L2，L3，L4层，在每一层解析完后，都会调用<code>data_pull</code>函数移动数据指针到下一层。所以我们在L3层解析完成后，添加我们的解析rev_header的代码，因为</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>在Ubuntu下安装ovs-dpdk</title>
+    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
+    <id>http://hexiecs.com/2017/03/21/在Ubuntu下安装ovs-dpdk/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.565Z</updated>
+    
+    <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在Ubuntu下安装ovs-dpdk以及虚拟机&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
     
   </entry>
   

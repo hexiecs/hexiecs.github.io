@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="C8zXU5F1Jng8WvghiAWtjjhb01hId2cVPrenlQoyXx4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="IPV4,IPV6,communication">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="何谐写字的地方" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="本文为转载文章，原文地址">
+<meta name="keywords" content="IPV4,IPV6,communication">
+<meta property="og:type" content="article">
+<meta property="og:title" content="“[转]网络编程中IPV4和IPV6互相通信”">
+<meta property="og:url" content="http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/index.html">
+<meta property="og:site_name" content="何谐写字的地方">
+<meta property="og:description" content="本文为转载文章，原文地址">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://hexiecs.com/images/Network/IPv4cli&IPv6serv.png">
+<meta property="og:updated_time" content="2019-09-06T15:34:15.559Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="“[转]网络编程中IPV4和IPV6互相通信”">
+<meta name="twitter:description" content="本文为转载文章，原文地址">
+<meta name="twitter:image" content="http://hexiecs.com/images/Network/IPv4cli&IPv6serv.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'W2C23ZJQVQ',
+      apiKey: '26585c5135d90dd56d8adeb724cdd11d',
+      indexName: 'web',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/">
+
+
+
+
+
+  <title>“[转]网络编程中IPV4和IPV6互相通信” | 何谐写字的地方</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-93991357-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3cff32fdcf8abffe8b4cfdc50715185e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何谐写字的地方</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术生活随笔</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="何谐">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何谐写字的地方">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">“[转]网络编程中IPV4和IPV6互相通信”</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-21T22:51:09+08:00">
+                2017-03-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Network/" itemprop="url" rel="index">
+                    <span itemprop="name">Network</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.5k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p>
+<a id="more"></a>  
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p>
+<h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p>
+<ol>
+<li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li>
+<li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li>
+<li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li>
+<li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li>
+<li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li>
+</ol>
+<h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p>
+<ol>
+<li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li>
+<li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li>
+<li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li>
+<li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li>
+</ol>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p>
+<p>参考资料：<br>《Unix 网络编程》</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Network-Programming/" rel="tag"># Network Programming</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/21/在OVS-DPDK中解析自定义报头/" rel="next" title="在ovs-dpdk中解析自定义报头">
+                <i class="fa fa-chevron-left"></i> 在ovs-dpdk中解析自定义报头
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/21/TCP服务和首部/" rel="prev" title="TCP服务和首部">
+                TCP服务和首部 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.JPG" alt="何谐">
+            
+              <p class="site-author-name" itemprop="name">何谐</p>
+              <p class="site-description motion-element" itemprop="description">终身学习者</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/hexiecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:610531006@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPv4-客户端与-IPv6-服务器"><span class="nav-number">2.</span> <span class="nav-text">IPv4 客户端与 IPv6 服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPv6-客户端与-IPv4-服务器"><span class="nav-number">3.</span> <span class="nav-text">IPv6 客户端与 IPv4 服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">何谐</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

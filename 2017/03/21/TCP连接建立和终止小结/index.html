@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="C8zXU5F1Jng8WvghiAWtjjhb01hId2cVPrenlQoyXx4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="TCP,连接">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="何谐写字的地方" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="TCP协议的笔记之一">
+<meta name="keywords" content="TCP,连接">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP连接建立和终止小结">
+<meta property="og:url" content="http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/index.html">
+<meta property="og:site_name" content="何谐写字的地方">
+<meta property="og:description" content="TCP协议的笔记之一">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%BB%88%E6%AD%A2.PNG">
+<meta property="og:image" content="http://oiyc9c736.bkt.clouddn.com/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80.PNG">
+<meta property="og:image" content="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E7%BB%88%E6%AD%A2.PNG">
+<meta property="og:image" content="http://oiyc9c736.bkt.clouddn.com/TCP%E5%8D%8A%E5%85%B3%E9%97%AD.PNG">
+<meta property="og:updated_time" content="2019-09-06T15:34:15.563Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TCP连接建立和终止小结">
+<meta name="twitter:description" content="TCP协议的笔记之一">
+<meta name="twitter:image" content="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%BB%88%E6%AD%A2.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'W2C23ZJQVQ',
+      apiKey: '26585c5135d90dd56d8adeb724cdd11d',
+      indexName: 'web',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/">
+
+
+
+
+
+  <title>TCP连接建立和终止小结 | 何谐写字的地方</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-93991357-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3cff32fdcf8abffe8b4cfdc50715185e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何谐写字的地方</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术生活随笔</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="何谐">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何谐写字的地方">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">TCP连接建立和终止小结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-21T22:51:09+08:00">
+                2017-03-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Network/" itemprop="url" rel="index">
+                    <span itemprop="name">Network</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.1k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  7
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>TCP协议的笔记之一</p>
+<a id="more"></a>
+<h2 id="TCP连接建立（三次握手）"><a href="#TCP连接建立（三次握手）" class="headerlink" title="TCP连接建立（三次握手）"></a>TCP连接建立（三次握手）</h2><p>如图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%BB%88%E6%AD%A2.PNG" alt></p>
+<ol>
+<li>请求端发送一个SYN到服务器的相应端口，以及初始序号ISN</li>
+<li>服务器发送包含服务器的初始序号的SYN作为应答，同时确认序号设置为客户的ISN+1</li>
+<li>客户将确认序号设置为服务器的ISN+1</li>
+</ol>
+<h4 id="最大报文段长度（MSS）"><a href="#最大报文段长度（MSS）" class="headerlink" title="最大报文段长度（MSS）"></a>最大报文段长度（MSS）</h4><ul>
+<li>连接建立时，连接的双方都要通告各自的MSS。当建立一个连接时，每一方都有通告它期望接收的MSS选项。如果一方不接收来自另一方的MSS值，则MSS就定为576字节。对于一个以太网，MSS可达1460字节（1460 + IP首部20 + TCP首部20 = 1500）。如果目的IP地址是“非本地的”， MSS通常的默认值是536。  </li>
+<li>MSS让主机限制另一端发送数据报的长度，加上主机也能控制它发送数据报的长度，这将使以较小MTU连接到一个网络的主机避免分段。  </li>
+<li>如果两端的主机都连接到以太网上，都采用536的MSS, 但中间网络采用296的MTU，也将会出现分段， 使用路径上的MTU发现机制是关于这个问题的唯一方法。</li>
+</ul>
+<h4 id="同时打开"><a href="#同时打开" class="headerlink" title="同时打开"></a>同时打开</h4><p>一般情况下，连接建立时是一方发送SYN，另一方发送SYN+ACK， 但极个别情况下，有可能两个应用程序几乎同时向对方发送SYN，这就叫做同时打开。同时打开需要双方都使用彼此熟知的端口，而不是一般情况下只需要客户使用服务器的知名端口。<br>TCP的同时打开的状态变迁图如下：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80.PNG" alt="image"><br>两端几乎同时发送SYN,并进入SYN_SENT状态。当每一端收到SYN时，状态变为SYN_RCVD，同时它们都再发SYN并对收到的SYN进行确认。当双方都收到SYN及相应的ACK时，状态都变迁为ESTABLISHED。</p>
+<h4 id="呼入连接请求队列"><a href="#呼入连接请求队列" class="headerlink" title="呼入连接请求队列"></a>呼入连接请求队列</h4><p>有可能出现当服务器在创建一个新的进程时，或操作系统正忙于处理优先级更高的进程时，到达多个连接请求，当服务器处于忙时，TCP是如何处理这些呼入的连接请求？<br>在伯克利的TCP实现中采用以下规则：  </p>
+<ol>
+<li>正等待连接请求的一端有一个固定长度的连接队列，该队列中的连接已被TCP接受（即三次握手已完成），但还没有被应用层所接受。注意区分TCP接受一个连接是将其放入队列，而应用层是将其从该队列中移出。</li>
+<li>应用层将指明该队列的最大长度，这个值称为积压值。它的取值范围是0~5之间的整数。</li>
+<li>当一个连接请求到达时，TCP使用一个算法，来确定是否接收这个连接。</li>
+<li>如果对于新的连接请求，该TCP监听的端点的连接队列中还有空间，TCP模块将对这个SYN进行确认并完成连接的建立。但应用层只有在三次握手中的第三个报文段才能知道这个新连接。另外，当客户进程的主动打开成功但服务器的应用层还不知道这个新的连接时，它可能会认为服务器进程已经准备好接收数据了（如果发生这种情况，服务器的TCP仅将接收的数据放入缓冲队列）。</li>
+<li>如果对于新的连接请求，连接队列已没有空间，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），如果应用层不能及时接受已被TCP接受的连接，这些连接可能占满整个连接队列，客户的主动打开将最终超时。<br>当队列已满时，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），因为这是一个软错误，而不是一个硬错误。通常队列已满是由于应用程序或操作系统忙造成的，这样可防止应用程序对传入的连接进行服务。这个条件在很短的时间内可以改变。但如果服务器的TCP以系统复位作为响应，客户进程的主动打开将被废弃。由于不应答SYN，服务器程序迫使客户TCP随后重传SYN,以等待连接队列有空间接受新的连接。<h2 id="TCP连接终止（四次握手）"><a href="#TCP连接终止（四次握手）" class="headerlink" title="TCP连接终止（四次握手）"></a>TCP连接终止（四次握手）</h2>既然一个TCP连接是全双工的（即数据在两个方向上都能传递），因此每个方向都必须单独进行关闭。这原则就是当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向上的连接。当一端收到一个FIN，它必须通知应用层另一端已经终止了那个方向的数据传送。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E7%BB%88%E6%AD%A2.PNG" alt="image"><h4 id="半关闭"><a href="#半关闭" class="headerlink" title="半关闭"></a>半关闭</h4>TCP提供了连接的一端在结束它的发送后还能接收来自另一端数据的能力。这就是所谓的半关闭。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%8D%8A%E5%85%B3%E9%97%AD.PNG" alt="image"><h4 id="2MSL等待状态"><a href="#2MSL等待状态" class="headerlink" title="2MSL等待状态"></a>2MSL等待状态</h4>TIME_WAIT状态也称为2MSL等待状态。每个具体TCP实现必须选择一个报文段最大生存时间MSL。它是任何报文段被丢弃前在网络内的最长时间。<br>为什么要有TIME_WAIT状态？  </li>
+</ol>
+<ul>
+<li>因为终止连接的一方发送的最后的一个ACK可能会丢失，另一端超时并重发最后的FIN， 这样终止连接的一方可以再次发送最后的ACK  </li>
+</ul>
+<p>为什么是2MSL？</p>
+<ul>
+<li>最后一个ACK存在的时间最多为MSL，如果ACK丢失，然后接收端超时并重发FIN，这个FIN最多存在时间又是MSL，而TIME_WAIT状态需要等待这个连接中的所有分组都消失，所以需要等待2ML</li>
+<li>2MSL时间后这个连接的所有分组都会消失，不会干扰到接下来相同socket对建立的连接。</li>
+</ul>
+<p>TCP在2MSL等待期间，定义这个连接的插口（客户的IP地址和端口号，服务器的IP地址和端口号）不能再被使用，这个连接只能在2MSL结束后才能再被使用。如果我们终止一个已经建立连接的服务器程序，并试图立即重启这个服务器程序，服务器程序不能把它的这个熟知端口赋值给它的端点，因为那个端口是出于2MSL连接的一部分。<br>我们可以以-A标记来设置SO_REUSEADDR，这样可以使服务器程序使用之前的端口，但它不能主动打开之前的相同端口的客户程序，应为那个连接的插口对仍处于2MSL等待状态。但我们如果让那个客户程序来主动打开这个服务器程序是会成功的，因为大多数的伯克利实现支持一个新的连接请求到达仍处于TIME_WAIT状态的连接。</p>
+<h4 id="复位报文段"><a href="#复位报文段" class="headerlink" title="复位报文段"></a>复位报文段</h4><p>一般说来，无论何时一个报文段发往指定的连接出现错误，TCP都会发出一个复位报文段。<br>产生复位的几种常见情况是：</p>
+<ul>
+<li>到不存在的端口的连接请求；</li>
+<li>异常终止一个连接；</li>
+<li>检测半打开连接。<br>如果一端已经关闭或异常终止连接而另一方却还不知道，我们将这样的连接成为半打开连接。<h4 id="同时关闭"><a href="#同时关闭" class="headerlink" title="同时关闭"></a>同时关闭</h4>两边都执行主动关闭也是有可能的，TCP协议也允许这样的同时关闭。<br>如下图：  </li>
+</ul>
+<h2 id="部分问题"><a href="#部分问题" class="headerlink" title="部分问题"></a>部分问题</h2><ol>
+<li>为什么服务器对客户FIN的ACK不和自己的FIN合并（即终止连接不是三次握手）？<br>因为发送客户FIN的ACK通常是收到FIN就立刻发送，但这是服务器不一定要关闭自己这端的连接，还可能需要发送数据（半关闭），所以不一定要发送FIN。</li>
+<li>分析处于TIME_WAIT状态的主机收到使其进入此状态的重复的FIN时所发生的情况<br>发送ACK,重启定时器。</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/TCP/" rel="tag"># TCP</a>
+          
+            <a href="/tags/连接/" rel="tag"># 连接</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/21/TCP的数据传输小结/" rel="next" title="TCP数据传输小结">
+                <i class="fa fa-chevron-left"></i> TCP数据传输小结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/22/difference between close() and shutdown() when TCP terminate/" rel="prev" title="socket编程中close()和shutdown()的区别">
+                socket编程中close()和shutdown()的区别 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.JPG" alt="何谐">
+            
+              <p class="site-author-name" itemprop="name">何谐</p>
+              <p class="site-description motion-element" itemprop="description">终身学习者</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/hexiecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:610531006@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP连接建立（三次握手）"><span class="nav-number">1.</span> <span class="nav-text">TCP连接建立（三次握手）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#最大报文段长度（MSS）"><span class="nav-number">1.0.1.</span> <span class="nav-text">最大报文段长度（MSS）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同时打开"><span class="nav-number">1.0.2.</span> <span class="nav-text">同时打开</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#呼入连接请求队列"><span class="nav-number">1.0.3.</span> <span class="nav-text">呼入连接请求队列</span></a></li></ol></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP连接终止（四次握手）"><span class="nav-number">2.</span> <span class="nav-text">TCP连接终止（四次握手）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#半关闭"><span class="nav-number">2.0.1.</span> <span class="nav-text">半关闭</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2MSL等待状态"><span class="nav-number">2.0.2.</span> <span class="nav-text">2MSL等待状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复位报文段"><span class="nav-number">2.0.3.</span> <span class="nav-text">复位报文段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#同时关闭"><span class="nav-number">2.0.4.</span> <span class="nav-text">同时关闭</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部分问题"><span class="nav-number">3.</span> <span class="nav-text">部分问题</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">何谐</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
