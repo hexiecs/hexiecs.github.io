@@ -522,8 +522,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/" rel="next" title="“[转]网络编程中IPV4和IPV6互相通信”">
-                <i class="fa fa-chevron-left"></i> “[转]网络编程中IPV4和IPV6互相通信”
+              <a href="/2017/03/21/TCP的成块数据流/" rel="next" title="TCP成块数据流">
+                <i class="fa fa-chevron-left"></i> TCP成块数据流
               </a>
             
           </div>
@@ -935,6 +935,28 @@
 
 
 
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        app_id: 'Ob3jIfHi7cMYAfFztBzvBLuX-gzGzoHsz',
+        app_key: 'OLAv9KPRL4fYTpHmbtIrrXl7',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
 
 
 
