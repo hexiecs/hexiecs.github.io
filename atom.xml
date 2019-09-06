@@ -330,6 +330,31 @@
   </entry>
   
   <entry>
+    <title>从setuid位谈谈Linux权限机制</title>
+    <link href="http://hexiecs.com/2017/03/21/setuid%20bit/"/>
+    <id>http://hexiecs.com/2017/03/21/setuid bit/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:06.924Z</updated>
+    
+    <content type="html"><![CDATA[<p>谈谈Linux setuid位</p><a id="more"></a><h3 id="passwd命令和-etc-passwd文件"><a href="#passwd命令和-etc-passwd文件" class="headerlink" title="passwd命令和/etc/passwd文件"></a>passwd命令和/etc/passwd文件</h3><p>用过Linux的都知道，Linux下的文件有读、写、执行三种权限，分别用rwx表示。准确来说有九种权限，也就是owner, group, others和rwx的组合。但了解passwd命令原理会发现，这个命令会修改/etc/passwd文件，但这个文件的拥有者是root,只有root用户有读写权限，它的也就是</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rw-r--r--</span><br></pre></td></tr></table></figure><p>那么，为什么普通用户也可以执行passwd命令修改自己的密码呢?查看/usr/bin/passwd的权限可知，它的权限为：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rwsr-xr-x</span><br></pre></td></tr></table></figure><p>这个s就是setuid位。</p><h3 id="setuid位"><a href="#setuid位" class="headerlink" title="setuid位"></a>setuid位</h3><p>当执行带有setuid位的文件（命令）时，Linux会把调用进程的euid设置为文件所有者的euid限，比如/usr/bin/passwd命令的所有者是root,那么调用者的euid就临时提升为0，就可以修改/etc/passwd文件了。当命令执行结束后，调用者恢复之前的euid限。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;谈谈Linux setuid位&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://hexiecs.com/categories/Linux/"/>
+    
+    
+      <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
+    
+      <category term="priviliege" scheme="http://hexiecs.com/tags/priviliege/"/>
+    
+  </entry>
+  
+  <entry>
     <title>TCP连接建立和终止小结</title>
     <link href="http://hexiecs.com/2017/03/21/TCP%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E5%92%8C%E7%BB%88%E6%AD%A2%E5%B0%8F%E7%BB%93/"/>
     <id>http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/</id>
@@ -380,6 +405,29 @@
   </entry>
   
   <entry>
+    <title>在ovs-dpdk中解析自定义报头</title>
+    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8OVS-DPDK%E4%B8%AD%E8%A7%A3%E6%9E%90%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8A%A5%E5%A4%B4/"/>
+    <id>http://hexiecs.com/2017/03/21/在OVS-DPDK中解析自定义报头/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.565Z</updated>
+    
+    <content type="html"><![CDATA[<p>在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头</p><a id="more"></a><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我自定义了一个报头，名叫rev header, 假设其内容为 </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct rev_header&#123;  </span><br><span class="line">int a;  </span><br><span class="line">int b;  </span><br><span class="line">int c;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>现在我想把它插入到数据包L3层和L4层之间，并在OVS中解析这个报头，这篇文章讲一下这个解析的过程。  </p><h3 id="数据通路"><a href="#数据通路" class="headerlink" title="数据通路"></a>数据通路</h3><p>这篇文章讲解了OVS-DPDK的数据通路：<a href="http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/" target="_blank" rel="noopener">http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/</a><br>在OVS-DPDK中，DPDK处理过的数据包，会传给OVS的<code>miniflow_extract</code>函数进行解析，提取key，进行后续的流表匹配。所以我们在<code>miniflow_extract</code>函数中提取我们的自定义报头。  </p><h3 id="添加代码"><a href="#添加代码" class="headerlink" title="添加代码"></a>添加代码</h3><p>在<code>miniflow_extract</code>中，OVS会解析数据包中的L2，L3，L4层，在每一层解析完后，都会调用<code>data_pull</code>函数移动数据指针到下一层。所以我们在L3层解析完成后，添加我们的解析rev_header的代码，因为</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
+    
+  </entry>
+  
+  <entry>
     <title>TCP成块数据流</title>
     <link href="http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%88%90%E5%9D%97%E6%95%B0%E6%8D%AE%E6%B5%81/"/>
     <id>http://hexiecs.com/2017/03/21/TCP的成块数据流/</id>
@@ -405,17 +453,17 @@
   </entry>
   
   <entry>
-    <title>TCP服务和首部</title>
-    <link href="http://hexiecs.com/2017/03/21/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/"/>
-    <id>http://hexiecs.com/2017/03/21/TCP服务和首部/</id>
+    <title>在Ubuntu下安装ovs-dpdk</title>
+    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
+    <id>http://hexiecs.com/2017/03/21/在Ubuntu下安装ovs-dpdk/</id>
     <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.560Z</updated>
+    <updated>2019-09-06T15:34:15.565Z</updated>
     
-    <content type="html"><![CDATA[<p>TCP协议的笔记</p><a id="more"></a><h3 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h3><ol><li>应用程序会被TCP分割成数据段，而UDP不分割。</li><li>TCP有超时重传和确认</li><li>如果检验和出错将丢弃</li><li>IP数据包可能会失序或者重复，所以TCP会处理</li><li>滑动窗口来进行流量控制</li><li>对字节流的内容不做任何解释</li></ol><h3 id="首部"><a href="#首部" class="headerlink" title="首部"></a>首部</h3><p>tcp首部如果不带可选字段，为20字节  </p><ol><li>16位的源端口号和目的端口号以及ip数据报首部的源和目的ip地址用来唯一表示一对主机。</li><li>序号标识这个报文段的第一个数据字节，确认序号表示希望对端发送的数据字节。</li><li>4位首部长度最大为15，表示最大长度为15＊4=60字节</li><li>检验和包括了tcp首部和数据</li><li>只有当URG位设置时紧急指针才有效，紧急指针是一个正的偏移量，和序号相加表示紧急数据中最后一个字节的序号。</li><li>最常见的可选字段是MSS，最长报文大小，指明本端所能接收的最大的报文大小。</li></ol>]]></content>
+    <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;TCP协议的笔记&lt;/p&gt;
+      &lt;p&gt;在Ubuntu下安装ovs-dpdk以及虚拟机&lt;/p&gt;
     
     </summary>
     
@@ -423,11 +471,7 @@
       <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
     
     
-      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
-    
-      <category term="服务" scheme="http://hexiecs.com/tags/%E6%9C%8D%E5%8A%A1/"/>
-    
-      <category term="报头" scheme="http://hexiecs.com/tags/%E6%8A%A5%E5%A4%B4/"/>
+      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
     
   </entry>
   
@@ -451,52 +495,6 @@
     
     
       <category term="Network Programming" scheme="http://hexiecs.com/tags/Network-Programming/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>在ovs-dpdk中解析自定义报头</title>
-    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8OVS-DPDK%E4%B8%AD%E8%A7%A3%E6%9E%90%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8A%A5%E5%A4%B4/"/>
-    <id>http://hexiecs.com/2017/03/21/在OVS-DPDK中解析自定义报头/</id>
-    <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.565Z</updated>
-    
-    <content type="html"><![CDATA[<p>在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头</p><a id="more"></a><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我自定义了一个报头，名叫rev header, 假设其内容为 </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct rev_header&#123;  </span><br><span class="line">int a;  </span><br><span class="line">int b;  </span><br><span class="line">int c;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>现在我想把它插入到数据包L3层和L4层之间，并在OVS中解析这个报头，这篇文章讲一下这个解析的过程。  </p><h3 id="数据通路"><a href="#数据通路" class="headerlink" title="数据通路"></a>数据通路</h3><p>这篇文章讲解了OVS-DPDK的数据通路：<a href="http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/" target="_blank" rel="noopener">http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/</a><br>在OVS-DPDK中，DPDK处理过的数据包，会传给OVS的<code>miniflow_extract</code>函数进行解析，提取key，进行后续的流表匹配。所以我们在<code>miniflow_extract</code>函数中提取我们的自定义报头。  </p><h3 id="添加代码"><a href="#添加代码" class="headerlink" title="添加代码"></a>添加代码</h3><p>在<code>miniflow_extract</code>中，OVS会解析数据包中的L2，L3，L4层，在每一层解析完后，都会调用<code>data_pull</code>函数移动数据指针到下一层。所以我们在L3层解析完成后，添加我们的解析rev_header的代码，因为</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
-    
-    
-      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>在Ubuntu下安装ovs-dpdk</title>
-    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
-    <id>http://hexiecs.com/2017/03/21/在Ubuntu下安装ovs-dpdk/</id>
-    <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.565Z</updated>
-    
-    <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;在Ubuntu下安装ovs-dpdk以及虚拟机&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
-    
-    
-      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
     
   </entry>
   

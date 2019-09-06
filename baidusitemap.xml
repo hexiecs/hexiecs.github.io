@@ -1,172 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
-  <url>
-    <loc>http://hexiecs.com/about/index.html</loc>
-    
-    <lastmod>2019-09-06T16:00:53.505Z</lastmod>
-    
-  </url>
-  
   <url>
     <loc>http://hexiecs.com/2019/05/12/Bigtable%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/</loc>
-    
-    <lastmod>2019-09-06T15:36:12.154Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2018/11/11/Cohort%20Query%20Processing/</loc>
-    
-    <lastmod>2019-09-06T15:34:46.248Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2018/12/02/Raft%E5%8D%8F%E8%AE%AE%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/</loc>
-    
-    <lastmod>2019-09-06T15:34:36.294Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2019/05/03/Chubby%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E6%9C%8D%E5%8A%A1%E6%80%BB%E7%BB%93/</loc>
-    
-    <lastmod>2019-09-06T15:34:36.293Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2018/11/11/CephFS/</loc>
-    
-    <lastmod>2019-09-06T15:34:36.286Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/08/12/protobuf/</loc>
-    
-    <lastmod>2019-09-06T15:34:24.416Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/%E5%9C%A8OVS-DPDK%E4%B8%AD%E8%A7%A3%E6%9E%90%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8A%A5%E5%A4%B4/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.565Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.565Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/22/difference%20between%20close()%20and%20shutdown()%20when%20TCP%20terminate/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.564Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/TCP%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E5%92%8C%E7%BB%88%E6%AD%A2%E5%B0%8F%E7%BB%93/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.563Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E5%B0%8F%E7%BB%93/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.562Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%88%90%E5%9D%97%E6%95%B0%E6%8D%AE%E6%B5%81/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.561Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.560Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/</loc>
-    
-    <lastmod>2019-09-06T15:34:15.559Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/21/setuid%20bit/</loc>
-    
-    <lastmod>2019-09-06T15:34:06.924Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/04/02/unlink%20and%20hard%20link%20and%20soft%20link/</loc>
-    
-    <lastmod>2019-09-06T15:34:06.924Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/26/getopt%20and%20getopt_long/</loc>
-    
-    <lastmod>2019-09-06T15:34:06.923Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/04/01/Linux%20%20difference%20between%20exit()%20and%20return/</loc>
-    
-    <lastmod>2019-09-06T15:34:06.921Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/09/17/%E3%80%8A%E7%B3%BB%E7%BB%9F%E7%A8%8B%E5%BA%8F%E5%91%98%E6%88%90%E9%95%BF%E8%AE%A1%E5%88%92%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0-%E7%AC%AC0%EF%BC%8C1%EF%BC%8C2%E7%AB%A0/</loc>
-    
-    <lastmod>2019-09-06T15:33:56.776Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/08/19/c++%2011%20%E6%96%B0%E7%89%B9%E6%80%A7%E5%AD%A6%E4%B9%A0/</loc>
-    
-    <lastmod>2019-09-06T02:48:50.652Z</lastmod>
-    
-  </url>
-  
-  <url>
+    <lastmod>2019-09-06</lastmod>
+  </url>  <url>
     <loc>http://hexiecs.com/2017/03/26/C++%20object%20initialize/</loc>
-    
-    <lastmod>2019-09-06T02:48:50.651Z</lastmod>
-    
+    <lastmod>2019-09-06</lastmod>
   </url>
-  
-  <url>
-    <loc>http://hexiecs.com/categories/index.html</loc>
-    
-    <lastmod>2019-09-06T02:26:10.639Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://hexiecs.com/tags/index.html</loc>
-    
-    <lastmod>2019-09-06T02:25:34.724Z</lastmod>
-    
-  </url>
-  
 </urlset>
