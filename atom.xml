@@ -330,6 +330,31 @@
   </entry>
   
   <entry>
+    <title>TCP连接建立和终止小结</title>
+    <link href="http://hexiecs.com/2017/03/21/TCP%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E5%92%8C%E7%BB%88%E6%AD%A2%E5%B0%8F%E7%BB%93/"/>
+    <id>http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.563Z</updated>
+    
+    <content type="html"><![CDATA[<p>TCP协议的笔记之一</p><a id="more"></a><h2 id="TCP连接建立（三次握手）"><a href="#TCP连接建立（三次握手）" class="headerlink" title="TCP连接建立（三次握手）"></a>TCP连接建立（三次握手）</h2><p>如图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%BB%88%E6%AD%A2.PNG" alt></p><ol><li>请求端发送一个SYN到服务器的相应端口，以及初始序号ISN</li><li>服务器发送包含服务器的初始序号的SYN作为应答，同时确认序号设置为客户的ISN+1</li><li>客户将确认序号设置为服务器的ISN+1</li></ol><h4 id="最大报文段长度（MSS）"><a href="#最大报文段长度（MSS）" class="headerlink" title="最大报文段长度（MSS）"></a>最大报文段长度（MSS）</h4><ul><li>连接建立时，连接的双方都要通告各自的MSS。当建立一个连接时，每一方都有通告它期望接收的MSS选项。如果一方不接收来自另一方的MSS值，则MSS就定为576字节。对于一个以太网，MSS可达1460字节（1460 + IP首部20 + TCP首部20 = 1500）。如果目的IP地址是“非本地的”， MSS通常的默认值是536。  </li><li>MSS让主机限制另一端发送数据报的长度，加上主机也能控制它发送数据报的长度，这将使以较小MTU连接到一个网络的主机避免分段。  </li><li>如果两端的主机都连接到以太网上，都采用536的MSS, 但中间网络采用296的MTU，也将会出现分段， 使用路径上的MTU发现机制是关于这个问题的唯一方法。</li></ul><h4 id="同时打开"><a href="#同时打开" class="headerlink" title="同时打开"></a>同时打开</h4><p>一般情况下，连接建立时是一方发送SYN，另一方发送SYN+ACK， 但极个别情况下，有可能两个应用程序几乎同时向对方发送SYN，这就叫做同时打开。同时打开需要双方都使用彼此熟知的端口，而不是一般情况下只需要客户使用服务器的知名端口。<br>TCP的同时打开的状态变迁图如下：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80.PNG" alt="image"><br>两端几乎同时发送SYN,并进入SYN_SENT状态。当每一端收到SYN时，状态变为SYN_RCVD，同时它们都再发SYN并对收到的SYN进行确认。当双方都收到SYN及相应的ACK时，状态都变迁为ESTABLISHED。</p><h4 id="呼入连接请求队列"><a href="#呼入连接请求队列" class="headerlink" title="呼入连接请求队列"></a>呼入连接请求队列</h4><p>有可能出现当服务器在创建一个新的进程时，或操作系统正忙于处理优先级更高的进程时，到达多个连接请求，当服务器处于忙时，TCP是如何处理这些呼入的连接请求？<br>在伯克利的TCP实现中采用以下规则：  </p><ol><li>正等待连接请求的一端有一个固定长度的连接队列，该队列中的连接已被TCP接受（即三次握手已完成），但还没有被应用层所接受。注意区分TCP接受一个连接是将其放入队列，而应用层是将其从该队列中移出。</li><li>应用层将指明该队列的最大长度，这个值称为积压值。它的取值范围是0~5之间的整数。</li><li>当一个连接请求到达时，TCP使用一个算法，来确定是否接收这个连接。</li><li>如果对于新的连接请求，该TCP监听的端点的连接队列中还有空间，TCP模块将对这个SYN进行确认并完成连接的建立。但应用层只有在三次握手中的第三个报文段才能知道这个新连接。另外，当客户进程的主动打开成功但服务器的应用层还不知道这个新的连接时，它可能会认为服务器进程已经准备好接收数据了（如果发生这种情况，服务器的TCP仅将接收的数据放入缓冲队列）。</li><li>如果对于新的连接请求，连接队列已没有空间，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），如果应用层不能及时接受已被TCP接受的连接，这些连接可能占满整个连接队列，客户的主动打开将最终超时。<br>当队列已满时，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），因为这是一个软错误，而不是一个硬错误。通常队列已满是由于应用程序或操作系统忙造成的，这样可防止应用程序对传入的连接进行服务。这个条件在很短的时间内可以改变。但如果服务器的TCP以系统复位作为响应，客户进程的主动打开将被废弃。由于不应答SYN，服务器程序迫使客户TCP随后重传SYN,以等待连接队列有空间接受新的连接。<h2 id="TCP连接终止（四次握手）"><a href="#TCP连接终止（四次握手）" class="headerlink" title="TCP连接终止（四次握手）"></a>TCP连接终止（四次握手）</h2>既然一个TCP连接是全双工的（即数据在两个方向上都能传递），因此每个方向都必须单独进行关闭。这原则就是当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向上的连接。当一端收到一个FIN，它必须通知应用层另一端已经终止了那个方向的数据传送。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E7%BB%88%E6%AD%A2.PNG" alt="image"><h4 id="半关闭"><a href="#半关闭" class="headerlink" title="半关闭"></a>半关闭</h4>TCP提供了连接的一端在结束它的发送后还能接收来自另一端数据的能力。这就是所谓的半关闭。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%8D%8A%E5%85%B3%E9%97%AD.PNG" alt="image"><h4 id="2MSL等待状态"><a href="#2MSL等待状态" class="headerlink" title="2MSL等待状态"></a>2MSL等待状态</h4>TIME_WAIT状态也称为2MSL等待状态。每个具体TCP实现必须选择一个报文段最大生存时间MSL。它是任何报文段被丢弃前在网络内的最长时间。<br>为什么要有TIME_WAIT状态？  </li></ol><ul><li>因为终止连接的一方发送的最后的一个ACK可能会丢失，另一端超时并重发最后的FIN， 这样终止连接的一方可以再次发送最后的ACK  </li></ul><p>为什么是2MSL？</p><ul><li>最后一个ACK存在的时间最多为MSL，如果ACK丢失，然后接收端超时并重发FIN，这个FIN最多存在时间又是MSL，而TIME_WAIT状态需要等待这个连接中的所有分组都消失，所以需要等待2ML</li><li>2MSL时间后这个连接的所有分组都会消失，不会干扰到接下来相同socket对建立的连接。</li></ul><p>TCP在2MSL等待期间，定义这个连接的插口（客户的IP地址和端口号，服务器的IP地址和端口号）不能再被使用，这个连接只能在2MSL结束后才能再被使用。如果我们终止一个已经建立连接的服务器程序，并试图立即重启这个服务器程序，服务器程序不能把它的这个熟知端口赋值给它的端点，因为那个端口是出于2MSL连接的一部分。<br>我们可以以-A标记来设置SO_REUSEADDR，这样可以使服务器程序使用之前的端口，但它不能主动打开之前的相同端口的客户程序，应为那个连接的插口对仍处于2MSL等待状态。但我们如果让那个客户程序来主动打开这个服务器程序是会成功的，因为大多数的伯克利实现支持一个新的连接请求到达仍处于TIME_WAIT状态的连接。</p><h4 id="复位报文段"><a href="#复位报文段" class="headerlink" title="复位报文段"></a>复位报文段</h4><p>一般说来，无论何时一个报文段发往指定的连接出现错误，TCP都会发出一个复位报文段。<br>产生复位的几种常见情况是：</p><ul><li>到不存在的端口的连接请求；</li><li>异常终止一个连接；</li><li>检测半打开连接。<br>如果一端已经关闭或异常终止连接而另一方却还不知道，我们将这样的连接成为半打开连接。<h4 id="同时关闭"><a href="#同时关闭" class="headerlink" title="同时关闭"></a>同时关闭</h4>两边都执行主动关闭也是有可能的，TCP协议也允许这样的同时关闭。<br>如下图：  </li></ul><h2 id="部分问题"><a href="#部分问题" class="headerlink" title="部分问题"></a>部分问题</h2><ol><li>为什么服务器对客户FIN的ACK不和自己的FIN合并（即终止连接不是三次握手）？<br>因为发送客户FIN的ACK通常是收到FIN就立刻发送，但这是服务器不一定要关闭自己这端的连接，还可能需要发送数据（半关闭），所以不一定要发送FIN。</li><li>分析处于TIME_WAIT状态的主机收到使其进入此状态的重复的FIN时所发生的情况<br>发送ACK,重启定时器。</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;TCP协议的笔记之一&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
+    
+      <category term="连接" scheme="http://hexiecs.com/tags/%E8%BF%9E%E6%8E%A5/"/>
+    
+  </entry>
+  
+  <entry>
     <title>TCP数据传输小结</title>
     <link href="http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E5%B0%8F%E7%BB%93/"/>
     <id>http://hexiecs.com/2017/03/21/TCP的数据传输小结/</id>
@@ -341,31 +366,6 @@
     <summary type="html">
     
       &lt;p&gt;tcp协议的笔记之一&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
-    
-    
-      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
-    
-      <category term="数据传输" scheme="http://hexiecs.com/tags/%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>TCP成块数据流</title>
-    <link href="http://hexiecs.com/2017/03/21/TCP%E7%9A%84%E6%88%90%E5%9D%97%E6%95%B0%E6%8D%AE%E6%B5%81/"/>
-    <id>http://hexiecs.com/2017/03/21/TCP的成块数据流/</id>
-    <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.561Z</updated>
-    
-    <content type="html"><![CDATA[<p>TCP协议的笔记之一</p><a id="more"></a><h1 id="TCP的成块数据流"><a href="#TCP的成块数据流" class="headerlink" title="TCP的成块数据流"></a>TCP的成块数据流</h1><h3 id="正常数据流"><a href="#正常数据流" class="headerlink" title="正常数据流"></a>正常数据流</h3><p>通常使用隔一个报文段确认的策略。即当一个报文段被处理时，连接被标记为产生一个经受时延的确认。如果时延定时器溢出前，下一个报文段被处理完，那么（两个报文段的）确认立刻被发送。<br>使用TCP的滑动窗口协议时，接收方不必确认每一个收到的分组。在TCP中，ACK是累积的——它们表示接收方已经正确收到了一直到确认序号减1的所有字节。</p><h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>如图：<img src="http://oiyc9c736.bkt.clouddn.com/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3.PNG" alt="image"><br>提供的窗口即接收方通告的窗口，当发送方收到一个确认时，窗口的左边沿向右移动，窗口的右边沿是否向右移动取决于ACK中通告的窗口大小，窗口大小是相对于左边沿的。另外，窗口的左边沿不可能向左移动，因为那样意味着收到了一个重复的ACK，窗口的右边沿不可能向左移动。</p><h3 id="PUSH标志"><a href="#PUSH标志" class="headerlink" title="PUSH标志"></a>PUSH标志</h3><p>发送方使用该标志通知接收方将所收到的数据全部提交给接收进程。这里的数据包括与PUSH一起传送的数据以及接收方TCP已经为接收进程收到的其他数据。<br>如果待发送的数据将清空发送缓存，则大多数的源于伯克利的实现能够自动设置PUSH标志。这意味着我们能够观察到每个应用数据写的数据均被设置了PUSH标志，因为数据在写的时候就立即被发送。</p><h3 id="慢启动"><a href="#慢启动" class="headerlink" title="慢启动"></a>慢启动</h3><p>如果在发送方和接收方之间存在多个路由器和速率较慢的链路时，采用发送方一开始便向网络发送多个报文段就有可能出现一些问题。一些中间的路由器必须缓存分组，并有可能耗尽存储器的空间。<br>慢启动算法通过观察到新的分组进入网络的速率应该与另一端返回的确认的速率相同而工作。<br>慢启动为发送方的TCP增加了另一个窗口：拥塞窗口，当与另一个网络的主机建立TCP连接时，拥塞窗口初始化为1个报文段。每收到一个ACK，拥塞窗口就增加一个报文段。发送方取拥塞窗口和通告窗口中的最小值作为发送上限。拥塞窗口是发送方使用的流量控制，而通告窗口是接收方使用的流量控制。拥塞窗口是一种指数增加的关系。</p><h3 id="带宽时延乘积"><a href="#带宽时延乘积" class="headerlink" title="带宽时延乘积"></a>带宽时延乘积</h3><p>可以计算通道的容量为：<br>capacity(bit) = bandwidth(b/s) x round-trip time(s)<br>一般称为带宽时延乘积。这个值依赖于网络速率和两端的RTT。接收方的通告窗口必须不少于这个数目，因为通告窗口限制了发送方能够发送的段的数目。</p><h3 id="紧急方式"><a href="#紧急方式" class="headerlink" title="紧急方式"></a>紧急方式</h3><p>TCP提供了“紧急方式”， 它使一端可以告诉另一端有些具有某种方式的“紧急数据”已经被放置在普通数据流中。另一端被通知这个紧急数据已经被放置在普通数据流中，由接收方决定如何处理。<br>可以通过设置TCP首部中的两个字段来发出这种从一端到另一端的紧急数据已经被放置在数据流中的通知。URG比特被置1，并且一个16bit的紧急指针被置为一个正的偏移量，该偏移量必须与TCP首部的序号相加，以便得出紧急数据的最后一个字节的序号。<br>即使接收窗口为0，也能发送紧急数据。</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;TCP协议的笔记之一&lt;/p&gt;
     
     </summary>
     
@@ -403,17 +403,17 @@
   </entry>
   
   <entry>
-    <title>TCP服务和首部</title>
-    <link href="http://hexiecs.com/2017/03/21/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/"/>
-    <id>http://hexiecs.com/2017/03/21/TCP服务和首部/</id>
+    <title>在ovs-dpdk中解析自定义报头</title>
+    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8OVS-DPDK%E4%B8%AD%E8%A7%A3%E6%9E%90%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8A%A5%E5%A4%B4/"/>
+    <id>http://hexiecs.com/2017/03/21/在OVS-DPDK中解析自定义报头/</id>
     <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.560Z</updated>
+    <updated>2019-09-06T15:34:15.565Z</updated>
     
-    <content type="html"><![CDATA[<p>TCP协议的笔记</p><a id="more"></a><h3 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h3><ol><li>应用程序会被TCP分割成数据段，而UDP不分割。</li><li>TCP有超时重传和确认</li><li>如果检验和出错将丢弃</li><li>IP数据包可能会失序或者重复，所以TCP会处理</li><li>滑动窗口来进行流量控制</li><li>对字节流的内容不做任何解释</li></ol><h3 id="首部"><a href="#首部" class="headerlink" title="首部"></a>首部</h3><p>tcp首部如果不带可选字段，为20字节  </p><ol><li>16位的源端口号和目的端口号以及ip数据报首部的源和目的ip地址用来唯一表示一对主机。</li><li>序号标识这个报文段的第一个数据字节，确认序号表示希望对端发送的数据字节。</li><li>4位首部长度最大为15，表示最大长度为15＊4=60字节</li><li>检验和包括了tcp首部和数据</li><li>只有当URG位设置时紧急指针才有效，紧急指针是一个正的偏移量，和序号相加表示紧急数据中最后一个字节的序号。</li><li>最常见的可选字段是MSS，最长报文大小，指明本端所能接收的最大的报文大小。</li></ol>]]></content>
+    <content type="html"><![CDATA[<p>在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头</p><a id="more"></a><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我自定义了一个报头，名叫rev header, 假设其内容为 </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct rev_header&#123;  </span><br><span class="line">int a;  </span><br><span class="line">int b;  </span><br><span class="line">int c;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>现在我想把它插入到数据包L3层和L4层之间，并在OVS中解析这个报头，这篇文章讲一下这个解析的过程。  </p><h3 id="数据通路"><a href="#数据通路" class="headerlink" title="数据通路"></a>数据通路</h3><p>这篇文章讲解了OVS-DPDK的数据通路：<a href="http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/" target="_blank" rel="noopener">http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/</a><br>在OVS-DPDK中，DPDK处理过的数据包，会传给OVS的<code>miniflow_extract</code>函数进行解析，提取key，进行后续的流表匹配。所以我们在<code>miniflow_extract</code>函数中提取我们的自定义报头。  </p><h3 id="添加代码"><a href="#添加代码" class="headerlink" title="添加代码"></a>添加代码</h3><p>在<code>miniflow_extract</code>中，OVS会解析数据包中的L2，L3，L4层，在每一层解析完后，都会调用<code>data_pull</code>函数移动数据指针到下一层。所以我们在L3层解析完成后，添加我们的解析rev_header的代码，因为</p>]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;TCP协议的笔记&lt;/p&gt;
+      &lt;p&gt;在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头&lt;/p&gt;
     
     </summary>
     
@@ -421,36 +421,7 @@
       <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
     
     
-      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
-    
-      <category term="服务" scheme="http://hexiecs.com/tags/%E6%9C%8D%E5%8A%A1/"/>
-    
-      <category term="报头" scheme="http://hexiecs.com/tags/%E6%8A%A5%E5%A4%B4/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>TCP连接建立和终止小结</title>
-    <link href="http://hexiecs.com/2017/03/21/TCP%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B%E5%92%8C%E7%BB%88%E6%AD%A2%E5%B0%8F%E7%BB%93/"/>
-    <id>http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/</id>
-    <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.563Z</updated>
-    
-    <content type="html"><![CDATA[<p>TCP协议的笔记之一</p><a id="more"></a><h2 id="TCP连接建立（三次握手）"><a href="#TCP连接建立（三次握手）" class="headerlink" title="TCP连接建立（三次握手）"></a>TCP连接建立（三次握手）</h2><p>如图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E5%92%8C%E7%BB%88%E6%AD%A2.PNG" alt></p><ol><li>请求端发送一个SYN到服务器的相应端口，以及初始序号ISN</li><li>服务器发送包含服务器的初始序号的SYN作为应答，同时确认序号设置为客户的ISN+1</li><li>客户将确认序号设置为服务器的ISN+1</li></ol><h4 id="最大报文段长度（MSS）"><a href="#最大报文段长度（MSS）" class="headerlink" title="最大报文段长度（MSS）"></a>最大报文段长度（MSS）</h4><ul><li>连接建立时，连接的双方都要通告各自的MSS。当建立一个连接时，每一方都有通告它期望接收的MSS选项。如果一方不接收来自另一方的MSS值，则MSS就定为576字节。对于一个以太网，MSS可达1460字节（1460 + IP首部20 + TCP首部20 = 1500）。如果目的IP地址是“非本地的”， MSS通常的默认值是536。  </li><li>MSS让主机限制另一端发送数据报的长度，加上主机也能控制它发送数据报的长度，这将使以较小MTU连接到一个网络的主机避免分段。  </li><li>如果两端的主机都连接到以太网上，都采用536的MSS, 但中间网络采用296的MTU，也将会出现分段， 使用路径上的MTU发现机制是关于这个问题的唯一方法。</li></ul><h4 id="同时打开"><a href="#同时打开" class="headerlink" title="同时打开"></a>同时打开</h4><p>一般情况下，连接建立时是一方发送SYN，另一方发送SYN+ACK， 但极个别情况下，有可能两个应用程序几乎同时向对方发送SYN，这就叫做同时打开。同时打开需要双方都使用彼此熟知的端口，而不是一般情况下只需要客户使用服务器的知名端口。<br>TCP的同时打开的状态变迁图如下：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80.PNG" alt="image"><br>两端几乎同时发送SYN,并进入SYN_SENT状态。当每一端收到SYN时，状态变为SYN_RCVD，同时它们都再发SYN并对收到的SYN进行确认。当双方都收到SYN及相应的ACK时，状态都变迁为ESTABLISHED。</p><h4 id="呼入连接请求队列"><a href="#呼入连接请求队列" class="headerlink" title="呼入连接请求队列"></a>呼入连接请求队列</h4><p>有可能出现当服务器在创建一个新的进程时，或操作系统正忙于处理优先级更高的进程时，到达多个连接请求，当服务器处于忙时，TCP是如何处理这些呼入的连接请求？<br>在伯克利的TCP实现中采用以下规则：  </p><ol><li>正等待连接请求的一端有一个固定长度的连接队列，该队列中的连接已被TCP接受（即三次握手已完成），但还没有被应用层所接受。注意区分TCP接受一个连接是将其放入队列，而应用层是将其从该队列中移出。</li><li>应用层将指明该队列的最大长度，这个值称为积压值。它的取值范围是0~5之间的整数。</li><li>当一个连接请求到达时，TCP使用一个算法，来确定是否接收这个连接。</li><li>如果对于新的连接请求，该TCP监听的端点的连接队列中还有空间，TCP模块将对这个SYN进行确认并完成连接的建立。但应用层只有在三次握手中的第三个报文段才能知道这个新连接。另外，当客户进程的主动打开成功但服务器的应用层还不知道这个新的连接时，它可能会认为服务器进程已经准备好接收数据了（如果发生这种情况，服务器的TCP仅将接收的数据放入缓冲队列）。</li><li>如果对于新的连接请求，连接队列已没有空间，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），如果应用层不能及时接受已被TCP接受的连接，这些连接可能占满整个连接队列，客户的主动打开将最终超时。<br>当队列已满时，TCP将不理会收到的SYN，也不发回任何报文段（即不发回RST），因为这是一个软错误，而不是一个硬错误。通常队列已满是由于应用程序或操作系统忙造成的，这样可防止应用程序对传入的连接进行服务。这个条件在很短的时间内可以改变。但如果服务器的TCP以系统复位作为响应，客户进程的主动打开将被废弃。由于不应答SYN，服务器程序迫使客户TCP随后重传SYN,以等待连接队列有空间接受新的连接。<h2 id="TCP连接终止（四次握手）"><a href="#TCP连接终止（四次握手）" class="headerlink" title="TCP连接终止（四次握手）"></a>TCP连接终止（四次握手）</h2>既然一个TCP连接是全双工的（即数据在两个方向上都能传递），因此每个方向都必须单独进行关闭。这原则就是当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向上的连接。当一端收到一个FIN，它必须通知应用层另一端已经终止了那个方向的数据传送。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E8%BF%9E%E6%8E%A5%E7%BB%88%E6%AD%A2.PNG" alt="image"><h4 id="半关闭"><a href="#半关闭" class="headerlink" title="半关闭"></a>半关闭</h4>TCP提供了连接的一端在结束它的发送后还能接收来自另一端数据的能力。这就是所谓的半关闭。<br>如下图：<br><img src="http://oiyc9c736.bkt.clouddn.com/TCP%E5%8D%8A%E5%85%B3%E9%97%AD.PNG" alt="image"><h4 id="2MSL等待状态"><a href="#2MSL等待状态" class="headerlink" title="2MSL等待状态"></a>2MSL等待状态</h4>TIME_WAIT状态也称为2MSL等待状态。每个具体TCP实现必须选择一个报文段最大生存时间MSL。它是任何报文段被丢弃前在网络内的最长时间。<br>为什么要有TIME_WAIT状态？  </li></ol><ul><li>因为终止连接的一方发送的最后的一个ACK可能会丢失，另一端超时并重发最后的FIN， 这样终止连接的一方可以再次发送最后的ACK  </li></ul><p>为什么是2MSL？</p><ul><li>最后一个ACK存在的时间最多为MSL，如果ACK丢失，然后接收端超时并重发FIN，这个FIN最多存在时间又是MSL，而TIME_WAIT状态需要等待这个连接中的所有分组都消失，所以需要等待2ML</li><li>2MSL时间后这个连接的所有分组都会消失，不会干扰到接下来相同socket对建立的连接。</li></ul><p>TCP在2MSL等待期间，定义这个连接的插口（客户的IP地址和端口号，服务器的IP地址和端口号）不能再被使用，这个连接只能在2MSL结束后才能再被使用。如果我们终止一个已经建立连接的服务器程序，并试图立即重启这个服务器程序，服务器程序不能把它的这个熟知端口赋值给它的端点，因为那个端口是出于2MSL连接的一部分。<br>我们可以以-A标记来设置SO_REUSEADDR，这样可以使服务器程序使用之前的端口，但它不能主动打开之前的相同端口的客户程序，应为那个连接的插口对仍处于2MSL等待状态。但我们如果让那个客户程序来主动打开这个服务器程序是会成功的，因为大多数的伯克利实现支持一个新的连接请求到达仍处于TIME_WAIT状态的连接。</p><h4 id="复位报文段"><a href="#复位报文段" class="headerlink" title="复位报文段"></a>复位报文段</h4><p>一般说来，无论何时一个报文段发往指定的连接出现错误，TCP都会发出一个复位报文段。<br>产生复位的几种常见情况是：</p><ul><li>到不存在的端口的连接请求；</li><li>异常终止一个连接；</li><li>检测半打开连接。<br>如果一端已经关闭或异常终止连接而另一方却还不知道，我们将这样的连接成为半打开连接。<h4 id="同时关闭"><a href="#同时关闭" class="headerlink" title="同时关闭"></a>同时关闭</h4>两边都执行主动关闭也是有可能的，TCP协议也允许这样的同时关闭。<br>如下图：  </li></ul><h2 id="部分问题"><a href="#部分问题" class="headerlink" title="部分问题"></a>部分问题</h2><ol><li>为什么服务器对客户FIN的ACK不和自己的FIN合并（即终止连接不是三次握手）？<br>因为发送客户FIN的ACK通常是收到FIN就立刻发送，但这是服务器不一定要关闭自己这端的连接，还可能需要发送数据（半关闭），所以不一定要发送FIN。</li><li>分析处于TIME_WAIT状态的主机收到使其进入此状态的重复的FIN时所发生的情况<br>发送ACK,重启定时器。</li></ol>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;TCP协议的笔记之一&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
-    
-    
-      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
-    
-      <category term="连接" scheme="http://hexiecs.com/tags/%E8%BF%9E%E6%8E%A5/"/>
+      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
     
   </entry>
   
@@ -478,17 +449,17 @@
   </entry>
   
   <entry>
-    <title>在ovs-dpdk中解析自定义报头</title>
-    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8OVS-DPDK%E4%B8%AD%E8%A7%A3%E6%9E%90%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8A%A5%E5%A4%B4/"/>
-    <id>http://hexiecs.com/2017/03/21/在OVS-DPDK中解析自定义报头/</id>
+    <title>TCP服务和首部</title>
+    <link href="http://hexiecs.com/2017/03/21/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/"/>
+    <id>http://hexiecs.com/2017/03/21/TCP服务和首部/</id>
     <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.565Z</updated>
+    <updated>2019-09-06T15:34:15.560Z</updated>
     
-    <content type="html"><![CDATA[<p>在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头</p><a id="more"></a><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我自定义了一个报头，名叫rev header, 假设其内容为 </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct rev_header&#123;  </span><br><span class="line">int a;  </span><br><span class="line">int b;  </span><br><span class="line">int c;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>现在我想把它插入到数据包L3层和L4层之间，并在OVS中解析这个报头，这篇文章讲一下这个解析的过程。  </p><h3 id="数据通路"><a href="#数据通路" class="headerlink" title="数据通路"></a>数据通路</h3><p>这篇文章讲解了OVS-DPDK的数据通路：<a href="http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/" target="_blank" rel="noopener">http://zhaozhanxu.com/2016/09/08/SDN/OVS/2016-09-08-ovs-dpdk-pkts-flow/</a><br>在OVS-DPDK中，DPDK处理过的数据包，会传给OVS的<code>miniflow_extract</code>函数进行解析，提取key，进行后续的流表匹配。所以我们在<code>miniflow_extract</code>函数中提取我们的自定义报头。  </p><h3 id="添加代码"><a href="#添加代码" class="headerlink" title="添加代码"></a>添加代码</h3><p>在<code>miniflow_extract</code>中，OVS会解析数据包中的L2，L3，L4层，在每一层解析完后，都会调用<code>data_pull</code>函数移动数据指针到下一层。所以我们在L3层解析完成后，添加我们的解析rev_header的代码，因为</p>]]></content>
+    <content type="html"><![CDATA[<p>TCP协议的笔记</p><a id="more"></a><h3 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h3><ol><li>应用程序会被TCP分割成数据段，而UDP不分割。</li><li>TCP有超时重传和确认</li><li>如果检验和出错将丢弃</li><li>IP数据包可能会失序或者重复，所以TCP会处理</li><li>滑动窗口来进行流量控制</li><li>对字节流的内容不做任何解释</li></ol><h3 id="首部"><a href="#首部" class="headerlink" title="首部"></a>首部</h3><p>tcp首部如果不带可选字段，为20字节  </p><ol><li>16位的源端口号和目的端口号以及ip数据报首部的源和目的ip地址用来唯一表示一对主机。</li><li>序号标识这个报文段的第一个数据字节，确认序号表示希望对端发送的数据字节。</li><li>4位首部长度最大为15，表示最大长度为15＊4=60字节</li><li>检验和包括了tcp首部和数据</li><li>只有当URG位设置时紧急指针才有效，紧急指针是一个正的偏移量，和序号相加表示紧急数据中最后一个字节的序号。</li><li>最常见的可选字段是MSS，最长报文大小，指明本端所能接收的最大的报文大小。</li></ol>]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;在ovs-dpdk中可以添加代码，改变报头格式，使其可以解析自定义报头&lt;/p&gt;
+      &lt;p&gt;TCP协议的笔记&lt;/p&gt;
     
     </summary>
     
@@ -496,7 +467,36 @@
       <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
     
     
-      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
+      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
+    
+      <category term="服务" scheme="http://hexiecs.com/tags/%E6%9C%8D%E5%8A%A1/"/>
+    
+      <category term="报头" scheme="http://hexiecs.com/tags/%E6%8A%A5%E5%A4%B4/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>从setuid位谈谈Linux权限机制</title>
+    <link href="http://hexiecs.com/2017/03/21/setuid%20bit/"/>
+    <id>http://hexiecs.com/2017/03/21/setuid bit/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:06.924Z</updated>
+    
+    <content type="html"><![CDATA[<p>谈谈Linux setuid位</p><a id="more"></a><h3 id="passwd命令和-etc-passwd文件"><a href="#passwd命令和-etc-passwd文件" class="headerlink" title="passwd命令和/etc/passwd文件"></a>passwd命令和/etc/passwd文件</h3><p>用过Linux的都知道，Linux下的文件有读、写、执行三种权限，分别用rwx表示。准确来说有九种权限，也就是owner, group, others和rwx的组合。但了解passwd命令原理会发现，这个命令会修改/etc/passwd文件，但这个文件的拥有者是root,只有root用户有读写权限，它的也就是</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rw-r--r--</span><br></pre></td></tr></table></figure><p>那么，为什么普通用户也可以执行passwd命令修改自己的密码呢?查看/usr/bin/passwd的权限可知，它的权限为：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rwsr-xr-x</span><br></pre></td></tr></table></figure><p>这个s就是setuid位。</p><h3 id="setuid位"><a href="#setuid位" class="headerlink" title="setuid位"></a>setuid位</h3><p>当执行带有setuid位的文件（命令）时，Linux会把调用进程的euid设置为文件所有者的euid限，比如/usr/bin/passwd命令的所有者是root,那么调用者的euid就临时提升为0，就可以修改/etc/passwd文件了。当命令执行结束后，调用者恢复之前的euid限。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;谈谈Linux setuid位&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://hexiecs.com/categories/Linux/"/>
+    
+    
+      <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
+    
+      <category term="priviliege" scheme="http://hexiecs.com/tags/priviliege/"/>
     
   </entry>
   
