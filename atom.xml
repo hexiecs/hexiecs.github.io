@@ -382,6 +382,29 @@
   </entry>
   
   <entry>
+    <title>在Ubuntu下安装ovs-dpdk</title>
+    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
+    <id>http://hexiecs.com/2017/03/21/在Ubuntu下安装ovs-dpdk/</id>
+    <published>2017-03-21T14:51:09.000Z</published>
+    <updated>2019-09-06T15:34:15.565Z</updated>
+    
+    <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在Ubuntu下安装ovs-dpdk以及虚拟机&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
+    
+    
+      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
+    
+  </entry>
+  
+  <entry>
     <title>从setuid位谈谈Linux权限机制</title>
     <link href="http://hexiecs.com/2017/03/21/setuid%20bit/"/>
     <id>http://hexiecs.com/2017/03/21/setuid bit/</id>
@@ -403,29 +426,6 @@
       <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
     
       <category term="priviliege" scheme="http://hexiecs.com/tags/priviliege/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>“[转]网络编程中IPV4和IPV6互相通信”</title>
-    <link href="http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/"/>
-    <id>http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/</id>
-    <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.559Z</updated>
-    
-    <content type="html"><![CDATA[<p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p><a id="more"></a>  <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p><h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li><li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li><li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li><li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li></ol><h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li><li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li><li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li></ol><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p><p>参考资料：<br>《Unix 网络编程》</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;本文为转载文章，&lt;a href=&quot;http://blog.csdn.net/chenhanzhun/article/details/41944195&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;原文地址&lt;/a&gt;  &lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
-    
-    
-      <category term="Network Programming" scheme="http://hexiecs.com/tags/Network-Programming/"/>
     
   </entry>
   
@@ -455,17 +455,17 @@
   </entry>
   
   <entry>
-    <title>在Ubuntu下安装ovs-dpdk</title>
-    <link href="http://hexiecs.com/2017/03/21/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
-    <id>http://hexiecs.com/2017/03/21/在Ubuntu下安装ovs-dpdk/</id>
+    <title>“[转]网络编程中IPV4和IPV6互相通信”</title>
+    <link href="http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/"/>
+    <id>http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/</id>
     <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.565Z</updated>
+    <updated>2019-09-06T15:34:15.559Z</updated>
     
-    <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
+    <content type="html"><![CDATA[<p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p><a id="more"></a>  <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p><h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li><li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li><li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li><li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li></ol><h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li><li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li><li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li></ol><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p><p>参考资料：<br>《Unix 网络编程》</p>]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;在Ubuntu下安装ovs-dpdk以及虚拟机&lt;/p&gt;
+      &lt;p&gt;本文为转载文章，&lt;a href=&quot;http://blog.csdn.net/chenhanzhun/article/details/41944195&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;原文地址&lt;/a&gt;  &lt;/p&gt;
     
     </summary>
     
@@ -473,7 +473,7 @@
       <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
     
     
-      <category term="ovs-dpdk" scheme="http://hexiecs.com/tags/ovs-dpdk/"/>
+      <category term="Network Programming" scheme="http://hexiecs.com/tags/Network-Programming/"/>
     
   </entry>
   
