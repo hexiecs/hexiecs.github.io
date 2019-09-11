@@ -70,7 +70,7 @@
 
 
 
-  <meta name="keywords" content="Bigtable,笔记">
+  <meta name="keywords" content="C++,thread_local,">
 
 
 
@@ -83,20 +83,18 @@
 
 
 
-<meta name="description" content="Bigtable论文的笔记">
-<meta name="keywords" content="Bigtable,笔记">
+<meta name="description" content="最近在项目中用到了C++中的thread_local和volatile，写篇文章总结一下。">
+<meta name="keywords" content="C++,thread_local">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Bigtable论文笔记">
-<meta property="og:url" content="http://hexiecs.com/2019/05/12/Bigtable论文笔记/index.html">
+<meta property="og:title" content="C++多线程编程中的thread_local、volatile关键字">
+<meta property="og:url" content="http://hexiecs.com/2019/09/09/多线程编程中的thread-local、volatile关键字/index.html">
 <meta property="og:site_name" content="何谐写字的地方">
-<meta property="og:description" content="Bigtable论文的笔记">
+<meta property="og:description" content="最近在项目中用到了C++中的thread_local和volatile，写篇文章总结一下。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://hexiecs.com/images/Distribute/B1.png">
-<meta property="og:updated_time" content="2019-09-07T11:14:47.839Z">
+<meta property="og:updated_time" content="2019-09-11T14:55:12.199Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Bigtable论文笔记">
-<meta name="twitter:description" content="Bigtable论文的笔记">
-<meta name="twitter:image" content="http://hexiecs.com/images/Distribute/B1.png">
+<meta name="twitter:title" content="C++多线程编程中的thread_local、volatile关键字">
+<meta name="twitter:description" content="最近在项目中用到了C++中的thread_local和volatile，写篇文章总结一下。">
 
 
 
@@ -126,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://hexiecs.com/2019/05/12/Bigtable论文笔记/">
+  <link rel="canonical" href="http://hexiecs.com/2019/09/09/多线程编程中的thread-local、volatile关键字/">
 
 
 
 
 
-  <title>Bigtable论文笔记 | 何谐写字的地方</title>
+  <title>C++多线程编程中的thread_local、volatile关键字 | 何谐写字的地方</title>
   
 
 
@@ -336,7 +334,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2019/05/12/Bigtable论文笔记/">
+    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2019/09/09/多线程编程中的thread-local、volatile关键字/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="何谐">
@@ -353,7 +351,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Bigtable论文笔记</h1>
+          <h1 class="post-title" itemprop="name headline">C++多线程编程中的thread_local、volatile关键字</h1>
         
 
         <div class="post-meta">
@@ -365,8 +363,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-12T16:54:00+08:00">
-                2019-05-12
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-09T20:55:37+08:00">
+                2019-09-09
               </time>
             
 
@@ -388,8 +386,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Distribute/" itemprop="url" rel="index">
-                    <span itemprop="name">Distribute</span>
+                  <a href="/categories/C/" itemprop="url" rel="index">
+                    <span itemprop="name">C++</span>
                   </a>
                 </span>
 
@@ -406,8 +404,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2019/05/12/Bigtable论文笔记/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/2019/05/12/Bigtable论文笔记/" itemprop="commentCount"></span>
+                <a href="/2019/09/09/多线程编程中的thread-local、volatile关键字/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/09/09/多线程编程中的thread-local、volatile关键字/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -415,7 +413,7 @@
 
           
           
-             <span id="/2019/05/12/Bigtable论文笔记/" class="leancloud_visitors" data-flag-title="Bigtable论文笔记">
+             <span id="/2019/09/09/多线程编程中的thread-local、volatile关键字/" class="leancloud_visitors" data-flag-title="C++多线程编程中的thread_local、volatile关键字">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -440,7 +438,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.4k 字
+                  2k 字
                 </span>
               
 
@@ -456,7 +454,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8 分钟
+                  7 分钟
                 </span>
               
             </div>
@@ -477,61 +475,59 @@
       
 
       
-        <p>Bigtable论文的笔记</p>
+        <p>最近在项目中用到了C++中的thread_local和volatile，写篇文章总结一下。</p>
 <a id="more"></a>
-<h1 id="Bigtable论文笔记"><a href="#Bigtable论文笔记" class="headerlink" title="Bigtable论文笔记"></a>Bigtable论文笔记</h1><h2 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h2><p><code>(row:string, column:string, timestamp:int64) -&gt; string</code><br>一个Bigtable就是一个多维的排序map，其中row和column类似于关系型数据库中的概念。<br>对于row有几点特别的：</p>
+<h2 id="thread-local"><a href="#thread-local" class="headerlink" title="thread_local"></a>thread_local</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>thread_local是C++11中新加的关键字，用于指定变量的存储周期（称为存储类指定符）。在C++11前，已经有几种存储类指定符，分别是：</p>
 <ul>
-<li>在同一行的读写都是原子的，而跨行的读写并不是原子的。  </li>
-<li>行按字典序排序  </li>
-<li>连续的一些行称为一个tablet，是负载均衡的基本单位。  </li>
+<li>auto: 自动存储期与无链接</li>
+<li>register： 自动存储期与无链接；不能取这种对象的地址</li>
+<li>static - 静态存储期与内部链接（除非在块作用域）</li>
+<li>extern - 静态存储期与外部链接（除非已声明带内部链接）</li>
 </ul>
-<p>对于column有一点特别的：  </p>
+<p>c++11新增的:</p>
 <ul>
-<li>多个列key可以被划分到一个列族中，列族是权限控制的基本单位，并且同一个列族的数据类型是一样的，因此数据可以基于列被压缩。  </li>
+<li>_Thread_local  - 线程存储期</li>
 </ul>
-<p>timestamp：  </p>
+<p>这里的thread_local其实是_Thread_local的一个宏，方便使用。thread_local可以和static或extern一起使用来决定变量的链接方式。上面四种存储期都比较简单，下面通过和static对比来介绍下thread_local对象：</p>
 <ul>
-<li>时间戳使得Bigtable可以存储同一数据的多个版本，还可以基于时间戳进行垃圾回收，比如只保留几天的数据，只保留几个版本的数据等等。</li>
+<li>可以用static对象做对比来方便理解，static存储在全局，所有线程都共享，彼此的修改都会互相影响，因此在多线程中对static变量并发修改时需要加锁。static对象可以修饰全局变量、块局部变量，成员变量，当某个线程执行到static对象的定义语句时，会在全局为这个对象分配空间，以后不会再执行这个对象的定义语句。</li>
+<li>而thread_local对象是每个线程都会独立拥有一份拷贝，可以想象成有一个map，把线程id映射到变量的拷贝。线程彼此的修改不会互相影响，所有线程都只会看到自己的那份拷贝，所以当多个线程需要对一个变量的修改进行共享时，不能用thread_local。同样的，thread_local也可以修饰全局变量、块局部变量和成员变量，和static变量不同的是，当某个线程执行到这个变量的定义语句，分配这个变量的存储空间后，别的线程同样会执行这个变量的定义语句来在本线程内分配存储空间。  </li>
 </ul>
-<h2 id="系统组成"><a href="#系统组成" class="headerlink" title="系统组成"></a>系统组成</h2><ul>
-<li>client library</li>
-<li>一个master server，负责分配tablets给tablet server，监测tablet server的增加和退出，tablet server的负载均衡，GFS中文件的垃圾回收。还负责schema的改变，比如表和column的创建。  </li>
-<li>tablet server管理许多tablets，直接负责tablets的读写和分裂。</li>
-</ul>
-<h2 id="Tablet位置"><a href="#Tablet位置" class="headerlink" title="Tablet位置"></a>Tablet位置</h2><p>Bigtable用一个类似于B+树的三层结构来存储tablet的位置信息，如图所示。</p>
-<p><img src="/images/Distribute/B1.png" alt></p>
-<ol>
-<li>root tablet的位置存放在Chubby中，root tablet中包含了METADATA table中的所有tablet的位置信息。其实root tablet就是METADATA table的第一个tablet，但是它永远不会分裂。  </li>
-<li>METADATA table的每一行存储一个tablet的位置信息，row key是这个tablet所在的表的标识符和这个tablet的最后一行两者的encoding。</li>
-<li>METADATA tablet的每一行大概有1KB的数据，假设一个METADATA tablet有128MB，那么这个三层结构可以索引2^34个tablet(每个tablet有2^17行，那么root tablet可以索引2^17个METADATA tablet，而每个METADATA tablet又可以索引2^17个实际的数据tablet)。</li>
-</ol>
-<p>client library会缓存tablet的位置信息，如果client的缓存是正确的，那直接根据缓存的信息寻址即可，否则这里分为两种情况讨论：</p>
-<ol>
-<li>client的缓存是空的<br>这时候client需要依次去chubby，root tablet server，metadata tablet server去拿位置信息，总共3个rtt</li>
-<li>client的缓存是错误的<br>讨论最坏情况，client缓存的metadata tablet信息和root tablet信息都是错的。client会依次进行以下步骤：<br>2.1 先根据缓存的metadata tablet信息去访问对应的tablet，发现位置是错的<br>2.2 client去metadata tablet server拿新的tablet位置信息，发现metadata tablet server的位置信息也是错的。<br>2.3 client去root tablet server拿metadata tablet的最新位置信息，发现root tablet server的位置也是错的<br>2.4 client去chubby拿最新的root tablet server位置信息<br>2.5 client去root tablet server拿最新的metadata tablet server信息<br>2.6 client去metadata tablet server拿最新的tablet位置信息<br>最坏情况下总共花了6个rtt  </li>
-</ol>
-<h2 id="Tablet分配"><a href="#Tablet分配" class="headerlink" title="Tablet分配"></a>Tablet分配</h2><p>master负责跟踪tablet server的运行情况，以及tablets到tablet server的分配情况。当一个tablet没有被分配时，master会向一个可用的tablet server发送一个tablet load请求来分配该tablet。<br>Bigtable使用Chubby来跟踪tablet server，当tablet server启动时，会向chubby申请一个互斥锁（其实是chubby某个目录下的一个文件）。当tablet server失去锁时就会停止服务，当这个锁文件已经被删后，这个tablet server再也不能对外服务，因此它就自己退出了。<br>master通过周期性的问tablet server它们的锁状态来检测它们的运行情况，当tablet server报告自己失去了锁，master就会去chubby尝试获取相同的锁，如果成功了，说明chubby是正常的，而这个tablet server要么挂了，要么是连不上chubby，因此master就可以把这个tablet server的文件给删了，把这个tablet server负责的tablets分配给其他tablet server。<br>当master启动时，它需要发现当前tablet的分配情况，master启动时的运行步骤如下：  </p>
-<ol>
-<li>在chubby获取master锁，防止并发的master启动</li>
-<li>master扫描chubby中的tablet server的目录，获取当前存活的server</li>
-<li>master和每个存活的server通信，发现已经分配的tablets</li>
-<li>master扫描METADATA table来发现所有的tablets，当遇到还未分配的tablets时，就把它加入到未分配的集合中</li>
-</ol>
-<p>在第4步扫描METADATA table前，METADATA tablets需要被分配，因此master在进行第4步前会先将root tablets分配，而root tablets包含所有的METADATA tablets的名字，master进而可以知道METADATA tablets的分配情况。<br>tablet的集合在几种情况下会变化：</p>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><h4 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">class A &#123;</span><br><span class="line">public:</span><br><span class="line">...</span><br><span class="line">private:</span><br><span class="line">...</span><br><span class="line">static thread_local int foo;</span><br><span class="line">&#125;;</span><br><span class="line">thread_local A::foo = 1;</span><br></pre></td></tr></table></figure>
+
+<p>如上面的代码片段所示，thread_local可以用来修饰成员变量(加不加static都是一样的)，变量的初始化方式和static变量类似，需要在class外部进行初始化，每个线程都会初始化这个变量一次。</p>
+<h4 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread_local int foo = 1;</span><br></pre></td></tr></table></figure>
+
+<p>同样，每个线程都会初始化这个变量一次，每个线程都拥有对这个变量的独立拷贝。</p>
+<h4 id="块作用域变量"><a href="#块作用域变量" class="headerlink" title="块作用域变量"></a>块作用域变量</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void Foo() &#123;</span><br><span class="line">	static thread_local bar = 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于每个线程，当它运行到这行定义语句时，都会创建一个独立的副本，和static变量一样，每个线程只初始化这个对象一次。</p>
+<h2 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h2><p>当试图用volatile来解决多线程程序的可见性问题时，99%的情况都是错误使用volatile。我在项目中看到很多多线程并发操作的代码片段都加上了volatile关键字，事实上这更多是一种心理安慰，去掉volatile不会对结果产生任何影响。首先回顾一下volatile能做出的几点保证：</p>
 <ul>
-<li>table被创建或删除</li>
-<li>两个tablet被merge成一个更大的tablet</li>
-<li>一个tablet被分裂成两个</li>
+<li>易变性：被volatile修饰的对象可能被意外的，不可预期的被改变，所以要求编译器每次读取该变量时都从内存中读取</li>
+<li>不可优化性：禁止编译器优化掉跟这个对象相关的语句</li>
+<li>顺序性：要求编译器保证volatile对象的语句之间是顺序的，但是没有保证volatile对象和非volatile对象的顺序，也没有保证cpu不对volatile语句乱序执行。</li>
 </ul>
-<p>前两种情况都是由master发起的，最后一种情况直接由tablet server发起。tablet server在分裂时会通知master，如果这个通知丢失了（比如master或者tablet server挂了），master在后来让tablet server加载已经分裂的tablet时也会知道这一点。这个tablet server会通知master，因为它在METADATA table中找到的tablet只是master让它加载的tablet的一部分（说明这个tablet已经分裂了而master还不知道）。  </p>
-<h2 id="Tablet-Serving、Compaction"><a href="#Tablet-Serving、Compaction" class="headerlink" title="Tablet Serving、Compaction"></a>Tablet Serving、Compaction</h2><p>和leveldb原理相同</p>
-<h2 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h2><h3 id="局部组"><a href="#局部组" class="headerlink" title="局部组"></a>局部组</h3><p>其实就是列式存储，个人认为Bigtable最大的贡献就是它的数据模型和列式存储了。Client可以将多个列族指定到一个局部组中，这个局部组的数据会被一个单独的SSTable文件存储。将数据按列进行存储使得读更加高效，因为当指定读某一列的数据时不用读很多没用的数据。<br>除此之外，局部组还有一些有用的参数，比如可以指定某一个局部组是常驻内存的，这样的话读的时候就不用访问磁盘，比较适合经常访问的少量的数据。</p>
-<h3 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h3><p>Client可以控制一个局部组是否被压缩，压缩是作用于每个SSTable Block而不是整个文件，这样虽然会损失一些空间但是在读取的时候可以不用解压整个文件。</p>
-<h3 id="缓存提高读性能"><a href="#缓存提高读性能" class="headerlink" title="缓存提高读性能"></a>缓存提高读性能</h3><p>为了提高读性能，tablet server使用两级的缓存。扫描缓存是把SSTable接口返回给tablet server的key value对缓存。块缓存是把从GFS读取的SSTable块缓存起来。扫描缓存对于重复读相同数据的的应用很有用，而块缓存对于倾向于读附近位置的数据的应用很有用。</p>
-<h3 id="布隆过滤器"><a href="#布隆过滤器" class="headerlink" title="布隆过滤器"></a>布隆过滤器</h3><p>读操作必须要读取组成一个tablet的所有SSTable，如果这些SSTable都在磁盘的话，就会涉及到多次磁盘访问。通过指定布隆过滤器可以显著减少访问次数，因为布隆过滤器可以告诉我们一个key是否存在于SSTable中，如果不存在，就没必要再去磁盘读取了。这个事实也说明，大多数对于不存在的行或列的查找都是不需要访问磁盘的。</p>
-<h3 id="commit-log实现"><a href="#commit-log实现" class="headerlink" title="commit-log实现"></a>commit-log实现</h3><p>如果每个tablet都独立有一个commit log的话，就会有非常多的文件并发的写入GFS，这会造成大量的磁盘访问。除此之外，独立的log文件也减少了group commit优化的效果。为了解决这个问题，Bigtable把所有的修改都提交到一个单独的commit log文件。<br>使用单独的commit log文件显著的提高了正常操作的性能，但是使恢复过程复杂了。当一个tablet server挂掉时，它负责的tablet会被分配给许多其它的tablet server，为了恢复一个tablet，新的tablet server需要加载之前的tablet server的commit log，但是这些tablets的commit log都被混合在一起。即使每个tablet server只应用对应tablet的那一部分，这个commit log文件也会被读很多次。<br>为了避免读log file很多次，首先将commit log按照key的字典序排序，排序后，某个tablet的所有entry都是连续的，因此只需要一个disk seek和一次顺序读就好了。为了并行排序，在排序的时候把log file分为64MB的段，然后分给tablet servers进行归并排序，排序由master进行协调，在某个tablet server表明它需要从log file文件进行恢复时被初始化。  </p>
-<h3 id="加速tablet恢复"><a href="#加速tablet恢复" class="headerlink" title="加速tablet恢复"></a>加速tablet恢复</h3><p>当master把tablet从一个tablet server移到另一个时，源server会先做一个minor compaction来减少commit log中未compact的log entry数目。然后这个源server就停止服务这个tablet（这里新的server还未加载这个tablet，所以这时这个tablet是由谁负责没搞明白），这时候源server再做一次compaction来把上次做minor compaction期间新增的log entry给compact了，这时候新的server就可以加载这个tablet了并且不存在任何未compact的log entry。  </p>
-<h3 id="利用不变性"><a href="#利用不变性" class="headerlink" title="利用不变性"></a>利用不变性</h3><p>因为SSTable的不可改变的特性，Bigtable的许多设计都简化了。比如，当读SSTable时，不需要任何的访问同步。唯一可变的数据结构是memtable，通过让每个memtable行copy-on-write的方式，使得读和写可以并发进行。<br>因为SSTable是不变的，所以去掉被删除的数据可以被转变为垃圾回收过期的SSTable。<br>最后，SSTable的不变性使得我们可以快速的分裂tablets，对于每个子tablet不用生成新的SSTable，可以和父tablet共享SSTable。</p>
+<p>大多数人看到易变性就会想到这个线程正在读取的变量正在被另一个线程修改，所以这个变量是易变的，然后试图用volatile关键字来让编译器每次读取这个变量时都从内存中读取而不是用寄存器来优化。<br>在这种场景下，一个线程在读一个变量的同时，另一个线程在写这个变量，这时候应该用锁或atomic来解决多线程对同一对象的竞争关系，因为即使这时候用volatile保证了是从内存中进行读取，由于多个线程在并发的对这个内存地址进行读写，这时候读到的数据可能是错的。 如果已经加了锁，那再加上volatile的唯一作用就是让程序运行的更慢了:) 因为锁已经可以保证这个变量是被一个线程独享了，并且在锁已经是一个内存屏障。<br>当然，如果这个变量只是一个int64的（在一个总线宽度内），cpu读写这个变量可以做到原子性，那这时候可不可以不加锁，直接用volatile来保证可见性就好了？我认为应该分情况讨论：</p>
+<ul>
+<li>共享变量的乱序是无所谓的，比如仅用于通知作用，考虑如下代码片段：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">volatile int stop = 0;</span><br><span class="line">// 线程1执行的函数</span><br><span class="line">void ThreadWork1() &#123;</span><br><span class="line">	while (!stop) &#123;</span><br><span class="line">		DoSomething();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//线程2执行的函数</span><br><span class="line">void ThreadWork2() &#123;</span><br><span class="line">	stop = 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果stop不加volatile，那么线程1可能会一直用寄存器中的值导致不能及时stop。所以volatile是适合用于多线程之间的简单的标志位的，但也仅限于作为一个标志位，如果这个标志位和其他的代码逻辑是耦合的，也就是说代码的乱序执行会对结果产生影响，那volatile是无能为力的，考虑如下的代码片段：</p>
+<ul>
+<li>共享变量的乱序执行会造成错误的结果：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">volatile int stop = 0;</span><br><span class="line">// 线程1执行的函数</span><br><span class="line">void ThreadWork1() &#123;</span><br><span class="line">	while (!stop) &#123;</span><br><span class="line">		DoSomething();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//线程2执行的函数</span><br><span class="line">void ThreadWork2() </span><br><span class="line">	// DoSomething2会改变一些值，比如令a = 1， 而ThreadWork1里的DoSomething的逻辑又依赖于a = 1</span><br><span class="line">	DoSomething2();</span><br><span class="line">	stop = 1;</span><br></pre></td></tr></table></figure>
+
+<p>在这种情况下，由于编译器或cpu可能会乱序执行 stop = 1和DoSomething2，导致ThreadWork1里看到stop = 1时其实DoSomething2并没有执行，导致DoSomething里的逻辑错误。<br>对于大多数的代码而言，其实都是属于第二种情况，因此除非你真的确定代码的乱序执行不会对结果产生影响，否则不要在多线程的共享变量中使用volatile，改用锁或atomic即可完美的代替volatile，即使是第一种情况也是可以用锁或atomic来代替的。因此我们可以对volatile的使用场景做一个总结：</p>
+<h3 id="volatile使用场景"><a href="#volatile使用场景" class="headerlink" title="volatile使用场景"></a>volatile使用场景</h3><ul>
+<li>和信号处理（signal handler）相关的场合；</li>
+<li>和内存映射硬件（memory mapped hardware）相关的场合；</li>
+<li>和非本地跳转（setjmp 和 longjmp）相关的场合。</li>
+<li>多线程中的简单标志位，简单指的是和其他代码的乱序执行不会对结果产生影响</li>
+</ul>
+<p>上面已经讨论了第四种情况，这里简单讨论前三种情况，事实上前三种情况是由于程序意想不到的地方改变了变量的值，导致需要读取内存，并且禁止编译器优化掉相关语句。比如在信号处理中，中断处理函数可能改了某个变量的内存内容，而原程序继续执行的时候，寄存器中的内存是旧的，因此需要重新从内存读取。而内存映射IO中，硬件的状态是随时可变的，比如同一个地址，可能每秒钟对应的硬件的状态都是不同的，而从同一地址读取两次可能会被编译器优化成一次，这时候编译器的优化就是错误的。在非本地跳转时，跳转后可能会修改变量，和信号处理的过程类似。</p>
 
       
     </div>
@@ -552,7 +548,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://hexiecs.com/2019/05/12/Bigtable论文笔记/" title="Bigtable论文笔记">http://hexiecs.com/2019/05/12/Bigtable论文笔记/</a>
+    <a href="http://hexiecs.com/2019/09/09/多线程编程中的thread-local、volatile关键字/" title="C++多线程编程中的thread_local、volatile关键字">http://hexiecs.com/2019/09/09/多线程编程中的thread-local、volatile关键字/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -567,9 +563,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Distribute/" rel="tag"># Distribute</a>
+            <a href="/tags/C/" rel="tag"># C++</a>
           
-            <a href="/tags/Storage/" rel="tag"># Storage</a>
+            <a href="/tags/thread-local/" rel="tag"># thread_local</a>
           
         </div>
       
@@ -582,8 +578,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/05/03/Chubby分布式锁服务总结/" rel="next" title="Chubby分布式锁服务总结">
-                <i class="fa fa-chevron-left"></i> Chubby分布式锁服务总结
+              <a href="/2019/09/07/四个hexo-next部署博客踩到的坑/" rel="next" title="四个hexo next部署博客踩到的坑">
+                <i class="fa fa-chevron-left"></i> 四个hexo next部署博客踩到的坑
               </a>
             
           </div>
@@ -591,10 +587,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/09/07/四个hexo-next部署博客踩到的坑/" rel="prev" title="四个hexo next部署博客踩到的坑">
-                四个hexo next部署博客踩到的坑 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -798,7 +790,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Bigtable论文笔记"><span class="nav-number">1.</span> <span class="nav-text">Bigtable论文笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据模型"><span class="nav-number">1.1.</span> <span class="nav-text">数据模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统组成"><span class="nav-number">1.2.</span> <span class="nav-text">系统组成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tablet位置"><span class="nav-number">1.3.</span> <span class="nav-text">Tablet位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tablet分配"><span class="nav-number">1.4.</span> <span class="nav-text">Tablet分配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tablet-Serving、Compaction"><span class="nav-number">1.5.</span> <span class="nav-text">Tablet Serving、Compaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#改进"><span class="nav-number">1.6.</span> <span class="nav-text">改进</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#局部组"><span class="nav-number">1.6.1.</span> <span class="nav-text">局部组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#压缩"><span class="nav-number">1.6.2.</span> <span class="nav-text">压缩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存提高读性能"><span class="nav-number">1.6.3.</span> <span class="nav-text">缓存提高读性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#布隆过滤器"><span class="nav-number">1.6.4.</span> <span class="nav-text">布隆过滤器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#commit-log实现"><span class="nav-number">1.6.5.</span> <span class="nav-text">commit-log实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加速tablet恢复"><span class="nav-number">1.6.6.</span> <span class="nav-text">加速tablet恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用不变性"><span class="nav-number">1.6.7.</span> <span class="nav-text">利用不变性</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#thread-local"><span class="nav-number">1.</span> <span class="nav-text">thread_local</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义"><span class="nav-number">1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用场景"><span class="nav-number">1.2.</span> <span class="nav-text">使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#成员变量"><span class="nav-number">1.2.1.</span> <span class="nav-text">成员变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#全局变量"><span class="nav-number">1.2.2.</span> <span class="nav-text">全局变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#块作用域变量"><span class="nav-number">1.2.3.</span> <span class="nav-text">块作用域变量</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#volatile"><span class="nav-number">2.</span> <span class="nav-text">volatile</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#volatile使用场景"><span class="nav-number">2.1.</span> <span class="nav-text">volatile使用场景</span></a></li></ol></li></ol></div>
             
 
           </div>
