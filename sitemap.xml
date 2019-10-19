@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://hexiecs.com/about/index.html</loc>
+    
+    <lastmod>2019-10-19T15:04:15.047Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://hexiecs.com/2019/09/12/Linux/Linux%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AD%A6%E4%B9%A0/</loc>
     
     <lastmod>2019-10-19T14:56:30.703Z</lastmod>
@@ -40,13 +47,6 @@
     <loc>http://hexiecs.com/2019/05/12/Distribute/Bigtable%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/</loc>
     
     <lastmod>2019-09-07T11:14:47.839Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://hexiecs.com/about/index.html</loc>
-    
-    <lastmod>2019-09-06T16:00:53.505Z</lastmod>
     
   </url>
   
