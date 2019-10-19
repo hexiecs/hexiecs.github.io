@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="C8zXU5F1Jng8WvghiAWtjjhb01hId2cVPrenlQoyXx4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CephFS,笔记">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="何谐写字的地方" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="CephFS阅读笔记">
+<meta name="keywords" content="CephFS,笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CephFS阅读笔记">
+<meta property="og:url" content="http://hexiecs.com/2018/11/11/Distribute/CephFS/index.html">
+<meta property="og:site_name" content="何谐写字的地方">
+<meta property="og:description" content="CephFS阅读笔记">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-06T15:34:36.286Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CephFS阅读笔记">
+<meta name="twitter:description" content="CephFS阅读笔记">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'W2C23ZJQVQ',
+      apiKey: '26585c5135d90dd56d8adeb724cdd11d',
+      indexName: 'web',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://hexiecs.com/2018/11/11/Distribute/CephFS/">
+
+
+
+
+
+  <title>CephFS阅读笔记 | 何谐写字的地方</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-93991357-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3cff32fdcf8abffe8b4cfdc50715185e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">何谐写字的地方</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">技术生活随笔</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2018/11/11/Distribute/CephFS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="何谐">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="何谐写字的地方">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">CephFS阅读笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-11T22:12:00+08:00">
+                2018-11-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distribute/" itemprop="url" rel="index">
+                    <span itemprop="name">Distribute</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/11/Distribute/CephFS/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2018/11/11/Distribute/CephFS/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/11/11/Distribute/CephFS/" class="leancloud_visitors" data-flag-title="CephFS阅读笔记">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.8k 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>CephFS阅读笔记</p>
+<a id="more"></a>
+<h1 id="CephFS阅读笔记"><a href="#CephFS阅读笔记" class="headerlink" title="CephFS阅读笔记"></a>CephFS阅读笔记</h1><h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ol>
+<li>和很多DFS一样都是元数据和数据分开存储，但是传统的DFS的数据分布信息都是在元数据里需要另外存储的，比如一个文件的块放在哪些机器哪些磁盘上，而Ceph的数据分布是通过一个伪随机函数称为CRUSH来完成的。</li>
+<li>Ceph的数据不是直接存储在磁盘中的，而是存储在智能的OSD（对象存储设备）中的， 因此可以把数据备份、错误检测和恢复等交给OSD来完成而不是像HDFS这样是交给namenode来完成，这样可以减轻元数据机器的压力。</li>
+<li>元数据机器是集群的，没有单点问题</li>
+</ol>
+<h2 id="分布式对象存储"><a href="#分布式对象存储" class="headerlink" title="分布式对象存储"></a>分布式对象存储</h2><p>大型的分布式系统有上千个设备组成，本质上是动态的。新的设备会被不断的部署，老设备会被移除，设备发生错误是正常情况而非异常。Ceph把数据迁移、备份、错误检测和恢复的责任交给OSD集群，可以充分利用每个OSD上的智能。对上层而言，OSDs集群被视为一个单独的逻辑对象存储和命名空间。</p>
+<h3 id="CRUSH"><a href="#CRUSH" class="headerlink" title="CRUSH"></a>CRUSH</h3><p>利用CRUSH函数，可以不用存储文件的块分配列表。任何人都可以根据文件的内容得到文件的存储对象的名字和位置，简化了文件系统的设计，减少了元数据服务器的负载。<br>CRUSH算法的论文见：<a href="https://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf。" target="_blank" rel="noopener">https://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf。</a><br>为了解决不平衡和负载倾斜，Ceph采用的策略是随机的分布新数据，迁移已存在数据的随机部分到新的设备中，把移除设备的数据随机的重分配。这种随机的方法是鲁棒的，因为它在任何的负载下都工作的一样好。<br>Ceph首先把对象用一个简单的hash函数映射到placement groups(PGs)，然后PGs用CRUSH函数映射到OSD列表上。为了定位一个OSD，CRUSH函数只需要PG和一个OSD集群的map：这个map是对集群的抽象化和层次化的描述。这种方法有两个好处：Ceph任何组成部分（client、MDS，OSD）都可以通过这个函数很快的得到一个object位于哪个OSD；第二是map很少改变，因此几乎不需要互相交换有关的元数据。<br>这个集群map是跟集群的物理或逻辑组成对齐的，例如，你可能形成一个四层的层次结构包括：磁盘，装满OSD磁盘的机架，装满机架的柜子，很多行柜子。CRUSH基于放置规则把PGs映射到OSD，包括有多少个副本、在放置时有哪些限制。集群map也有一个epoch计数，每次改变map都会增加epoch，当client端访问时会带上epoch，server发现client端map过期时会在给client端的响应中带上最新的map。</p>
+<h3 id="数据备份"><a href="#数据备份" class="headerlink" title="数据备份"></a>数据备份</h3><p>采用Primary-Copy技术，数据被备份到n个节点，Client写的时候，写主节点，主节点批量写到从节点，等都写到从节点的Cache中时，主节点给Client返回ACK，等从节点把Cache中的内容提交到此盘后，主节点向Client返回Commit。读的时候直接读主节点。<br>当Client收到ACK时，说明所有的节点都已经写到内存Cache了，这时候是可以容忍单个OSD出问题的（因为可以从其它OSD恢复）。但是默认情况下Client都会把写的内容Buffer存起来，防止所有的OSD最后提交到磁盘都失败，比如这些OSD都掉电了。</p>
+<h3 id="错误检测"><a href="#错误检测" class="headerlink" title="错误检测"></a>错误检测</h3><p>每个OSD都会检测跟它共享PGs的OSD。如果一个OSD最近一段时间没有听到来自另一个OSD的响应，它就会显示地Ping一下。一个没有响应的OSD刚开始会被标记为down，它的任何primary责任都会被移到下一个OSD。如果它没有快速的恢复的话，就会被标记为out，然后一个新的OSD就会加入到它的每个PGs中来重新备份它的内容。<br>有一个小的monitor集群会收集错误报告，并且过滤出哪些是短暂的失败，哪些是全局的系统性失败。monitor为OSD提供了一个一致的集群map的访问，当map被更新时，会通知受影响的OSD增量的map更新，然后这些OSD会通过OSD间的通信将这个更新在集群内传播。</p>
+<h3 id="恢复和集群更新"><a href="#恢复和集群更新" class="headerlink" title="恢复和集群更新"></a>恢复和集群更新</h3><p>为了加速恢复，OSD为它的所有objects都维护了一个版本号，并且为每个PGs都维护了一份最近更新的日志。当一个OSD收到一个更新的cluster map时，它会遍历它的所有本地存储的PGs，通过CRUSH函数找到哪个是它负责的PGs。如果一个PGs的成员发生了变化或者是一个OSD刚刚启动，它都会和PGs的其它成员交流。如果这个OSD是一个副本，它会向primary OSD提供它的当前PG版本号。如果一个OSD是primary的，它会收集当前（和以前的）副本的所有版本号，如果primary缺少PG的最新的状态，它会从当前或更早的副本中获取最近的PG改动的日志。然后primary会向副本发送PG日志的增量更新，然后primary可以开始工作了。然后OSDs就独立地从它的peers中获取它缺失的或者过期的object。</p>
+<h2 id="元数据集群"><a href="#元数据集群" class="headerlink" title="元数据集群"></a>元数据集群</h2><p>Ceph利用一个特别的基于动态子树分区的元数据集群架构来适应性的、智能地把管理文件系统目录层次的任务分发给数十上百个元数据服务器。一个动态的目录层次分区在每个元数据服务器的负载中维护了局部性，促进了有效率的更新和聚合的预取操作，进而提升了通常情况下的性能。显著地，在元数据服务器的负载分配完全基于当前访问的模式，允许Ceph在任何负载下有效的利用元数据服务器资源，实现随着元数据服务器数量近乎线性的扩展。  </p>
+<h3 id="元数据存储"><a href="#元数据存储" class="headerlink" title="元数据存储"></a>元数据存储</h3><p>Ceph因为可以不用存储文件的分配表，每个文件的元数据都很小，因此可以管理很多的文件。每个元数据服务器的数据是由lazily flushed日志刷到OSD上进行存储， 日志会吞并许多相对的更新，使得在最终刷到osd时，老的值已经被淘汰。<br>特别的，inode被嵌入到目录的数据中，这样一个读请求可以预取目录的文件，可以充分发挥目录的局部性。</p>
+<h3 id="动态子树分区"><a href="#动态子树分区" class="headerlink" title="动态子树分区"></a>动态子树分区</h3><p>通常的分布式文件系统在处理元数据服务器集群管理的数据时有两种策略：1. 静态分配，通常由管理员分配每个服务器负责哪些文件和目录 2. 由hash函数来分配文件和目录，通常根据当前的负载来决定。由于机器的负载通常是动态的，第一种方式无法适应这种变化。而第二种方式无法利用目录的局部性。<br>Ceph的元数据服务器是采用基于动态子树分区的方法，具体做法是：元数据服务器会使用指数时间衰减的计数器来收集目录层次结构里元数据的热度。任何的操作都会增加受影响的节点和他的所有父节点以及祖先节点的计数器，因此元数据服务器看到的其实是带权重的目录树，描述了当前的负载分布。元数据服务器会周期性的比较负载值，然后迁移合适大小的目录树的子树来维持负载均衡。因为持久的存储是共享的，所以迁移其实就是namespace的事情，通过仔细构造namespace的锁，把内存中cache的相关内容转换到新的权限认证（这里是因为目录被迁移了，以前的元数据服务器记录的这个目录的一些权限认证信息肯定要转移到新的元数据服务器），这样做到对client端影响最小。在新的元数据服务器上新增的目录树信息要被记录到日志中来持久化，在权限认证信息从旧的服务器转移到新的机器过程中，采用类似2PC的做法，先在两台服务器上写上日志，然后再提交转移，来防止可能的失败。<br>还有一点优化就是元数据信息是在多台元数据机器上备份的，因为元数据信息包含比较多的内容，为了减少操作时的锁开销，把inode的内容分为三个组，安全（owner，mode），文件（size，mtime），不可变的（inode number，ctime，layout），不可变的字段是只读的，安全和文件这两组都拥有自己的锁和状态机。</p>
+<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>把目录分区可以很大程度上平衡负载，但是还是无法消除热点问题，比如很多client一起访问同一个目录或文件。Ceph的做法是把这个热点给分散到多个节点上。这样，ceph在通常情况下（没有出现热点时）都不会造成多余的开销，当出现热点时，通过将热点分布到多个节点上，当client来访问时，Ceph会返回给Client热点的所有副本的位置，如果是更新操作，会告诉Client应该去哪台机更新。读的Client就可以随便选一台机器进行读，写的Client就可以直接去指定的那台机进行写，这样就把Client都分布到任何的元数据服务器上，消除了潜在的热点问题。</p>
+<h2 id="client同步"><a href="#client同步" class="headerlink" title="client同步"></a>client同步</h2><p>应用程序可以用标志控制自己的同步方式，可以由ceph来管理同步，这样每次读写都要阻塞到别的client已经读写完成，会有比较大的性能开销。也可以自己来管理，ceph提供了两个调用（lazyio_propagate和lazyio_synchronize），前者会把cache的给定范围的字节刷到object，后者保证前面propagate的结果会被后面的read知道，通过这两个调用，应用程序可以自己来管理同步。</p>
+<h2 id="命名空间操作"><a href="#命名空间操作" class="headerlink" title="命名空间操作"></a>命名空间操作</h2><p>这块做了几个优化。readdir后跟一个stat操作是非常常见的场景比如ls -l。在readdir时就把目录的简要信息缓存起来，stat的时候就可以直接返回。这样可能会有一致性问题，但是极大的提升了性能。还有一个优化是如果一个stat操作作用在一个很多writer正在写的文件上，为了返回当前正确的size，mtime等，ceph会暂时中断所有的写，然后收集最新的size和time返回出去。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    何谐
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://hexiecs.com/2018/11/11/Distribute/CephFS/" title="CephFS阅读笔记">http://hexiecs.com/2018/11/11/Distribute/CephFS/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Paper/" rel="tag"># Paper</a>
+          
+            <a href="/tags/Distribute/" rel="tag"># Distribute</a>
+          
+            <a href="/tags/File-System/" rel="tag"># File System</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/17/BookNotes/《系统程序员成长计划》读书笔记-第0，1，2章/" rel="next" title="系统程序员成长计划读书笔记-第0，1，2章">
+                <i class="fa fa-chevron-left"></i> 系统程序员成长计划读书笔记-第0，1，2章
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/11/Database/Cohort Query Processing/" rel="prev" title="Cohort Query Processing论文笔记">
+                Cohort Query Processing论文笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.JPG" alt="何谐">
+            
+              <p class="site-author-name" itemprop="name">何谐</p>
+              <p class="site-description motion-element" itemprop="description">微信搬砖工程师</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/hexiecs" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:610531006@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.zhihu.com/people/he-xie-16-93/activities" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-heart-o"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CephFS阅读笔记"><span class="nav-number">1.</span> <span class="nav-text">CephFS阅读笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#特点"><span class="nav-number">1.1.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分布式对象存储"><span class="nav-number">1.2.</span> <span class="nav-text">分布式对象存储</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CRUSH"><span class="nav-number">1.2.1.</span> <span class="nav-text">CRUSH</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据备份"><span class="nav-number">1.2.2.</span> <span class="nav-text">数据备份</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#错误检测"><span class="nav-number">1.2.3.</span> <span class="nav-text">错误检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#恢复和集群更新"><span class="nav-number">1.2.4.</span> <span class="nav-text">恢复和集群更新</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#元数据集群"><span class="nav-number">1.3.</span> <span class="nav-text">元数据集群</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#元数据存储"><span class="nav-number">1.3.1.</span> <span class="nav-text">元数据存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态子树分区"><span class="nav-number">1.3.2.</span> <span class="nav-text">动态子树分区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流量控制"><span class="nav-number">1.3.3.</span> <span class="nav-text">流量控制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#client同步"><span class="nav-number">1.4.</span> <span class="nav-text">client同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#命名空间操作"><span class="nav-number">1.5.</span> <span class="nav-text">命名空间操作</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">何谐</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: true,
+        notify: true,
+        appId: 'Ob3jIfHi7cMYAfFztBzvBLuX-gzGzoHsz',
+        appKey: 'OLAv9KPRL4fYTpHmbtIrrXl7',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("Ob3jIfHi7cMYAfFztBzvBLuX-gzGzoHsz", "OLAv9KPRL4fYTpHmbtIrrXl7");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

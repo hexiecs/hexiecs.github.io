@@ -1,23 +1,26 @@
-http://hexiecs.com/2019/09/09/多线程编程中的thread-local、volatile关键字/
-http://hexiecs.com/2019/09/07/四个hexo-next部署博客踩到的坑/
-http://hexiecs.com/2019/05/12/Bigtable论文笔记/
-http://hexiecs.com/2019/05/03/Chubby分布式锁服务总结/
-http://hexiecs.com/2018/12/02/Raft协议的一些思考/
-http://hexiecs.com/2018/11/11/Cohort Query Processing/
-http://hexiecs.com/2018/11/11/CephFS/
-http://hexiecs.com/2017/09/17/《系统程序员成长计划》读书笔记-第0，1，2章/
-http://hexiecs.com/2017/08/19/c++ 11 新特性学习/
-http://hexiecs.com/2017/08/12/protobuf/
-http://hexiecs.com/2017/04/02/unlink and hard link and soft link/
-http://hexiecs.com/2017/04/01/Linux  difference between exit() and return/
-http://hexiecs.com/2017/03/26/C++ object initialize/
-http://hexiecs.com/2017/03/26/getopt and getopt_long/
-http://hexiecs.com/2017/03/22/difference between close() and shutdown() when TCP terminate/
-http://hexiecs.com/2017/03/21/TCP的数据传输小结/
-http://hexiecs.com/2017/03/21/setuid bit/
-http://hexiecs.com/2017/03/21/TCP的成块数据流/
-http://hexiecs.com/2017/03/21/TCP服务和首部/
-http://hexiecs.com/2017/03/21/How-IPV4-and-IPV6-communicate-with-each-other/
-http://hexiecs.com/2017/03/21/在OVS-DPDK中解析自定义报头/
-http://hexiecs.com/2017/03/21/在Ubuntu下安装ovs-dpdk/
-http://hexiecs.com/2017/03/21/TCP连接建立和终止小结/
+http://hexiecs.com/2019/10/19/English/写作词汇总结/
+http://hexiecs.com/2019/10/19/English/写作IDEA总结/
+http://hexiecs.com/2019/09/12/Linux/Linux命令行学习/
+http://hexiecs.com/2019/09/09/C++/多线程编程中的thread-local、volatile关键字/
+http://hexiecs.com/2019/09/07/博客部署/四个hexo-next部署博客踩到的坑/
+http://hexiecs.com/2019/05/12/Distribute/Bigtable论文笔记/
+http://hexiecs.com/2019/05/03/Distribute/Chubby分布式锁服务总结/
+http://hexiecs.com/2018/12/02/Distribute/Raft协议的一些思考/
+http://hexiecs.com/2018/11/11/Database/Cohort Query Processing/
+http://hexiecs.com/2018/11/11/Distribute/CephFS/
+http://hexiecs.com/2017/09/17/BookNotes/《系统程序员成长计划》读书笔记-第0，1，2章/
+http://hexiecs.com/2017/08/19/C++/c++ 11 新特性学习/
+http://hexiecs.com/2017/08/12/others/protobuf/
+http://hexiecs.com/2017/04/02/Linux/unlink and hard link and soft link/
+http://hexiecs.com/2017/04/01/Linux/Linux difference between exit() and return/
+http://hexiecs.com/2017/03/26/C++/C++ object initialize/
+http://hexiecs.com/2017/03/26/Linux/getopt and getopt_long/
+http://hexiecs.com/2017/03/22/Network/difference between close() and shutdown() when TCP terminate/
+http://hexiecs.com/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/
+http://hexiecs.com/2017/03/21/Network/TCP的数据传输小结/
+http://hexiecs.com/2017/03/21/Linux/setuid bit/
+http://hexiecs.com/2017/03/21/Network/在OVS-DPDK中解析自定义报头/
+http://hexiecs.com/2017/03/21/Network/在Ubuntu下安装ovs-dpdk/
+http://hexiecs.com/2017/03/21/Network/TCP服务和首部/
+http://hexiecs.com/2017/03/21/Network/TCP的成块数据流/
+http://hexiecs.com/2017/03/21/Network/TCP连接建立和终止小结/
