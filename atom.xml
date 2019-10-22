@@ -260,9 +260,9 @@
       <category term="Distribute" scheme="http://hexiecs.com/categories/Distribute/"/>
     
     
-      <category term="Paper" scheme="http://hexiecs.com/tags/Paper/"/>
-    
       <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
+    
+      <category term="Paper" scheme="http://hexiecs.com/tags/Paper/"/>
     
       <category term="File System" scheme="http://hexiecs.com/tags/File-System/"/>
     
@@ -482,17 +482,17 @@
   </entry>
   
   <entry>
-    <title>TCP成块数据流</title>
-    <link href="http://hexiecs.com/2017/03/21/Network/TCP%E7%9A%84%E6%88%90%E5%9D%97%E6%95%B0%E6%8D%AE%E6%B5%81/"/>
-    <id>http://hexiecs.com/2017/03/21/Network/TCP的成块数据流/</id>
+    <title>“[转]网络编程中IPV4和IPV6互相通信”</title>
+    <link href="http://hexiecs.com/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/"/>
+    <id>http://hexiecs.com/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/</id>
     <published>2017-03-21T14:51:09.000Z</published>
-    <updated>2019-09-06T15:34:15.561Z</updated>
+    <updated>2019-09-06T15:34:15.559Z</updated>
     
-    <content type="html"><![CDATA[<p>TCP协议的笔记之一</p><a id="more"></a><h1 id="TCP的成块数据流"><a href="#TCP的成块数据流" class="headerlink" title="TCP的成块数据流"></a>TCP的成块数据流</h1><h3 id="正常数据流"><a href="#正常数据流" class="headerlink" title="正常数据流"></a>正常数据流</h3><p>通常使用隔一个报文段确认的策略。即当一个报文段被处理时，连接被标记为产生一个经受时延的确认。如果时延定时器溢出前，下一个报文段被处理完，那么（两个报文段的）确认立刻被发送。<br>使用TCP的滑动窗口协议时，接收方不必确认每一个收到的分组。在TCP中，ACK是累积的——它们表示接收方已经正确收到了一直到确认序号减1的所有字节。</p><h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>如图：<img src="http://oiyc9c736.bkt.clouddn.com/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3.PNG" alt="image"><br>提供的窗口即接收方通告的窗口，当发送方收到一个确认时，窗口的左边沿向右移动，窗口的右边沿是否向右移动取决于ACK中通告的窗口大小，窗口大小是相对于左边沿的。另外，窗口的左边沿不可能向左移动，因为那样意味着收到了一个重复的ACK，窗口的右边沿不可能向左移动。</p><h3 id="PUSH标志"><a href="#PUSH标志" class="headerlink" title="PUSH标志"></a>PUSH标志</h3><p>发送方使用该标志通知接收方将所收到的数据全部提交给接收进程。这里的数据包括与PUSH一起传送的数据以及接收方TCP已经为接收进程收到的其他数据。<br>如果待发送的数据将清空发送缓存，则大多数的源于伯克利的实现能够自动设置PUSH标志。这意味着我们能够观察到每个应用数据写的数据均被设置了PUSH标志，因为数据在写的时候就立即被发送。</p><h3 id="慢启动"><a href="#慢启动" class="headerlink" title="慢启动"></a>慢启动</h3><p>如果在发送方和接收方之间存在多个路由器和速率较慢的链路时，采用发送方一开始便向网络发送多个报文段就有可能出现一些问题。一些中间的路由器必须缓存分组，并有可能耗尽存储器的空间。<br>慢启动算法通过观察到新的分组进入网络的速率应该与另一端返回的确认的速率相同而工作。<br>慢启动为发送方的TCP增加了另一个窗口：拥塞窗口，当与另一个网络的主机建立TCP连接时，拥塞窗口初始化为1个报文段。每收到一个ACK，拥塞窗口就增加一个报文段。发送方取拥塞窗口和通告窗口中的最小值作为发送上限。拥塞窗口是发送方使用的流量控制，而通告窗口是接收方使用的流量控制。拥塞窗口是一种指数增加的关系。</p><h3 id="带宽时延乘积"><a href="#带宽时延乘积" class="headerlink" title="带宽时延乘积"></a>带宽时延乘积</h3><p>可以计算通道的容量为：<br>capacity(bit) = bandwidth(b/s) x round-trip time(s)<br>一般称为带宽时延乘积。这个值依赖于网络速率和两端的RTT。接收方的通告窗口必须不少于这个数目，因为通告窗口限制了发送方能够发送的段的数目。</p><h3 id="紧急方式"><a href="#紧急方式" class="headerlink" title="紧急方式"></a>紧急方式</h3><p>TCP提供了“紧急方式”， 它使一端可以告诉另一端有些具有某种方式的“紧急数据”已经被放置在普通数据流中。另一端被通知这个紧急数据已经被放置在普通数据流中，由接收方决定如何处理。<br>可以通过设置TCP首部中的两个字段来发出这种从一端到另一端的紧急数据已经被放置在数据流中的通知。URG比特被置1，并且一个16bit的紧急指针被置为一个正的偏移量，该偏移量必须与TCP首部的序号相加，以便得出紧急数据的最后一个字节的序号。<br>即使接收窗口为0，也能发送紧急数据。</p>]]></content>
+    <content type="html"><![CDATA[<p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p><a id="more"></a>  <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p><h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li><li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li><li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li><li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li></ol><h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li><li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li><li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li></ol><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p><p>参考资料：<br>《Unix 网络编程》</p>]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;TCP协议的笔记之一&lt;/p&gt;
+      &lt;p&gt;本文为转载文章，&lt;a href=&quot;http://blog.csdn.net/chenhanzhun/article/details/41944195&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;原文地址&lt;/a&gt;  &lt;/p&gt;
     
     </summary>
     
@@ -500,9 +500,7 @@
       <category term="Network" scheme="http://hexiecs.com/categories/Network/"/>
     
     
-      <category term="TCP" scheme="http://hexiecs.com/tags/TCP/"/>
-    
-      <category term="数据传输" scheme="http://hexiecs.com/tags/%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/"/>
+      <category term="Network Programming" scheme="http://hexiecs.com/tags/Network-Programming/"/>
     
   </entry>
   
