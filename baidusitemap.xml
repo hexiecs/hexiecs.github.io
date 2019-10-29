@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://hexiecs.com/2019/09/12/Linux/Linux%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AD%A6%E4%B9%A0/</loc>
-    <lastmod>2019-10-19</lastmod>
-  </url>  <url>
     <loc>http://hexiecs.com/2019/10/19/English/%E5%86%99%E4%BD%9C%E8%AF%8D%E6%B1%87%E6%80%BB%E7%BB%93/</loc>
+    <lastmod>2019-10-29</lastmod>
+  </url>  <url>
+    <loc>http://hexiecs.com/2019/09/12/Linux/Linux%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2019-10-19</lastmod>
   </url>  <url>
     <loc>http://hexiecs.com/2019/10/19/English/%E5%86%99%E4%BD%9CIDEA%E6%80%BB%E7%BB%93/</loc>
@@ -58,10 +58,10 @@
     <loc>http://hexiecs.com/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/</loc>
     <lastmod>2019-09-06</lastmod>
   </url>  <url>
-    <loc>http://hexiecs.com/2017/04/02/Linux/unlink%20and%20hard%20link%20and%20soft%20link/</loc>
+    <loc>http://hexiecs.com/2017/03/21/Linux/setuid%20bit/</loc>
     <lastmod>2019-09-06</lastmod>
   </url>  <url>
-    <loc>http://hexiecs.com/2017/03/21/Linux/setuid%20bit/</loc>
+    <loc>http://hexiecs.com/2017/04/02/Linux/unlink%20and%20hard%20link%20and%20soft%20link/</loc>
     <lastmod>2019-09-06</lastmod>
   </url>  <url>
     <loc>http://hexiecs.com/2017/03/26/Linux/getopt%20and%20getopt_long/</loc>
