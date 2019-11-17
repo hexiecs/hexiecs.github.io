@@ -341,7 +341,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2019/10/19/Linux-shell脚本编程学习/">
+    <link itemprop="mainEntityOfPage" href="http://hexiecs.com/2019/10/19/Linux/Linux-shell脚本编程学习/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="何谐">
@@ -360,7 +360,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/10/19/Linux-shell脚本编程学习/" itemprop="url">Linux/Linux shell脚本编程学习</a></h1>
+                <a class="post-title-link" href="/2019/10/19/Linux/Linux-shell脚本编程学习/" itemprop="url">Linux/Linux shell脚本编程学习</a></h1>
         
 
         <div class="post-meta">
@@ -383,6 +383,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -391,8 +413,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2019/10/19/Linux-shell脚本编程学习/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/2019/10/19/Linux-shell脚本编程学习/" itemprop="commentCount"></span>
+                <a href="/2019/10/19/Linux/Linux-shell脚本编程学习/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/10/19/Linux/Linux-shell脚本编程学习/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -414,7 +436,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  877 字
+                  887 字
                 </span>
               
 
@@ -452,71 +474,14 @@
 
       
         
-          
-            <h2 id="循环处理带有空格的文件名列表"><a href="#循环处理带有空格的文件名列表" class="headerlink" title="循环处理带有空格的文件名列表"></a>循环处理带有空格的文件名列表</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># file_list中的文件名含有空格</span><br><span class="line">file_list=`find . -type f -name &quot;*&quot;`</span><br><span class="line">echo &quot;$file_list&quot; | while read line</span><br><span class="line">do</span><br><span class="line">	# $line即为文件名，拿来处理即可</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<p>注意两点:</p>
-<ol>
-<li>echo后的双引号是必须的，如果不带双引号的话，file_list中的换行符会被忽略，所有的文件名都会在同一行.</li>
-<li>不能用for循环简单的处理，因为for循环没法简单的处理带有空格的文件名</li>
-</ol>
-<h2 id="将命令列表放入后台执行"><a href="#将命令列表放入后台执行" class="headerlink" title="将命令列表放入后台执行"></a>将命令列表放入后台执行</h2><p><code>(tar -cf Rich.tar /home/rich ; tar -cf My.tar /home/christine)&amp;</code><br>这样就创建了一个子shell用于执行这个命令列表，命令用（）包起来会被子shell执行。</p>
-<h2 id="处理多个数学算术表达式"><a href="#处理多个数学算术表达式" class="headerlink" title="处理多个数学算术表达式"></a>处理多个数学算术表达式</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cat test12 </span><br><span class="line"><span class="meta">#</span>!/bin/bash</span><br><span class="line">var1=10.46 </span><br><span class="line">var2=43.67 </span><br><span class="line">var3=33.2 </span><br><span class="line">var4=71</span><br><span class="line">var5=$(bc &lt;&lt; EOF </span><br><span class="line">scale = 4</span><br><span class="line">a1 = ( $var1 * $var2) </span><br><span class="line">b1 = ($var3 * $var4) </span><br><span class="line">a1 + b1</span><br><span class="line">EOF</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<h2 id="算术表达式"><a href="#算术表达式" class="headerlink" title="算术表达式"></a>算术表达式</h2><h3 id="expr语句，比较麻烦"><a href="#expr语句，比较麻烦" class="headerlink" title="expr语句，比较麻烦"></a>expr语句，比较麻烦</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">expr 1 + 2</span><br><span class="line">expr $var1 \* $var2</span><br><span class="line">var = $(expr $var1 \* $var2)</span><br></pre></td></tr></table></figure>
-
-<h3 id><a href="#" class="headerlink" title="$[]"></a>$[]</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span>[1 + 2]</span><br><span class="line"><span class="meta">$</span>[$var1 * $var2]</span><br></pre></td></tr></table></figure>
-
-<h3 id="bc-可支持浮点运算"><a href="#bc-可支持浮点运算" class="headerlink" title="bc 可支持浮点运算"></a>bc 可支持浮点运算</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> bc -q </span><br><span class="line">3.44 / 5 0 </span><br><span class="line">scale=4 </span><br><span class="line">3.44 / 5 </span><br><span class="line">.6880 </span><br><span class="line">quit</span><br><span class="line"><span class="meta">$</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> bc -q </span><br><span class="line">var1=10 </span><br><span class="line">var1 * 4 </span><br><span class="line">40</span><br><span class="line">var2 = var1 / 5 </span><br><span class="line">print var2</span><br><span class="line">2</span><br><span class="line">quit</span><br><span class="line"><span class="meta">$</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cat test9</span><br><span class="line"><span class="meta">#</span>!/bin/bash</span><br><span class="line">var1=$(echo "scale=4; 3.44 / 5" | bc) </span><br><span class="line">echo The answer is $var1</span><br><span class="line"><span class="meta">$</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ cat test12 </span><br><span class="line">#!/bin/bash</span><br><span class="line">var1=10.46 </span><br><span class="line">var2=43.67 </span><br><span class="line">var3=33.2 </span><br><span class="line">var4=71</span><br><span class="line">var5=$(bc &lt;&lt; EOF scale = 4</span><br><span class="line">a1 = ( $var1 * $var2) b1 = ($var3 * $var4) a1 + b1</span><br><span class="line">EOF</span><br><span class="line">)</span><br><span class="line">echo The final answer for this mess is $var5</span><br></pre></td></tr></table></figure>
-
-<h2 id="if语句"><a href="#if语句" class="headerlink" title="if语句"></a>if语句</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if cmd</span><br><span class="line">then</span><br><span class="line">else</span><br></pre></td></tr></table></figure>
-
-<p>如果cmd的返回值是0，则then后面的会执行，否则执行else</p>
-<p>if test condition = if [ condition ]    </p>
-<h3 id="数字比较"><a href="#数字比较" class="headerlink" title="数字比较"></a>数字比较</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">n1 -eq n2 </span><br><span class="line"></span><br><span class="line">n1 -ge n2 </span><br><span class="line"></span><br><span class="line">n1 -gt n2 </span><br><span class="line"></span><br><span class="line">n1 -le n2 </span><br><span class="line"></span><br><span class="line">n1 -lt n2 </span><br><span class="line"></span><br><span class="line">n1 -ne n2</span><br></pre></td></tr></table></figure>
-
-<h3 id="字符串比较"><a href="#字符串比较" class="headerlink" title="字符串比较"></a>字符串比较</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">str1 = str2 </span><br><span class="line">str1 != str2 </span><br><span class="line">str1 &lt; str2 </span><br><span class="line">str1 &gt; str2 </span><br><span class="line">-n str1</span><br><span class="line">-z str1</span><br></pre></td></tr></table></figure>
-
-<h3 id="文件比较"><a href="#文件比较" class="headerlink" title="文件比较"></a>文件比较</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">-d file</span><br><span class="line"> -e file</span><br><span class="line"> -f file</span><br><span class="line"> -r file</span><br><span class="line"> -s file  # not empty</span><br><span class="line"> -w file</span><br><span class="line"> -x file</span><br><span class="line"> -O file # owned by current user</span><br><span class="line"> -G file # default group is the same as the current user</span><br><span class="line"> file1 -nt file2   #newer than</span><br><span class="line"> file1 -ot file2   #older than</span><br></pre></td></tr></table></figure>
-
-<h3 id="布尔逻辑"><a href="#布尔逻辑" class="headerlink" title="布尔逻辑"></a>布尔逻辑</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[condition1] || [condition2]</span><br><span class="line">[condition1] &amp;&amp; [condition2]</span><br></pre></td></tr></table></figure>
-
-<h3 id="双圆括号"><a href="#双圆括号" class="headerlink" title="双圆括号"></a>双圆括号</h3><p>(())</p>
-<p>双括号中可以有高级的算术表达式</p>
-<h3 id="双方括号"><a href="#双方括号" class="headerlink" title="双方括号"></a>双方括号</h3><p>[[]]</p>
-<p>里面可以有高级的字符串比较，比如正则表达式</p>
-<h2 id="case表达式"><a href="#case表达式" class="headerlink" title="case表达式"></a>case表达式</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">case $var in </span><br><span class="line">value1)</span><br><span class="line">  xxx</span><br><span class="line">value2 | value3)</span><br><span class="line">  yyy</span><br><span class="line">*)</span><br><span class="line">  zzz</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
-
-<h2 id="for循环"><a href="#for循环" class="headerlink" title="for循环"></a>for循环</h2><h3 id="第一种方式"><a href="#第一种方式" class="headerlink" title="第一种方式"></a>第一种方式</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for iter in value1 value2 value3</span><br><span class="line">do</span><br><span class="line">   xxx</span><br><span class="line">done</span><br><span class="line">echo $iter # 在循环结束后，iter的值为list的最后一个值</span><br></pre></td></tr></table></figure>
-
-<p>当value1，value2…中含有空格或’时，用双引号把value括起来</p>
-<p>list可以来自于命令的输出。比如</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cat test5</span><br><span class="line"><span class="meta">#</span>!/bin/bash</span><br><span class="line"><span class="meta">#</span> reading values from a file</span><br><span class="line">file="states"</span><br><span class="line">for state in $(cat $file) do</span><br><span class="line">echo "Visit beautiful $state" </span><br><span class="line">done</span><br><span class="line"><span class="meta">$</span> cat states </span><br><span class="line">Alabama </span><br><span class="line">Alaska </span><br><span class="line">Arizona </span><br><span class="line">Arkansas </span><br><span class="line">Colorado </span><br><span class="line">Connecticut </span><br><span class="line">Delaware </span><br><span class="line">Florida </span><br><span class="line">Georgia</span><br><span class="line"><span class="meta">$</span> ./test5</span><br><span class="line">Visit beautiful Alabama </span><br><span class="line">Visit beautiful Alaska </span><br><span class="line">Visit beautiful Arizona </span><br><span class="line">Visit beautiful Arkansas </span><br><span class="line">Visit beautiful Colorado </span><br><span class="line">Visit beautiful Connecticut </span><br><span class="line">Visit beautiful Delaware </span><br><span class="line">Visit beautiful Florida </span><br><span class="line">Visit beautiful Georgia</span><br><span class="line"><span class="meta">$</span></span><br></pre></td></tr></table></figure>
-
-<p>默认情况下bash shell会把空格、tab、换行符视为数据的分隔符，这是由系统的环境变量IFS决定的，当不符合我们的需求时，可以临时改一下IFS，比如如果我们只想要换行符作为数据的分隔符，不想要空格和tab。那我们可以这样做：</p>
-<p><code>IFS=$&#39;\n&#39;</code></p>
-<p>当然也可以把IFS设为其它的值，比如冒号之类的，这在遍历/etc/passwd文件时很有用。</p>
-<h3 id="C风格for循环"><a href="#C风格for循环" class="headerlink" title="C风格for循环"></a>C风格for循环</h3><p><code>for (( variable assignment ; condition ; iteration process ))</code></p>
-<p><code>for (( i=1; i &lt;= 10; i++ ))</code></p>
-<h2 id="while循环"><a href="#while循环" class="headerlink" title="while循环"></a>while循环</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while test command # the same as 'while [command]'</span><br><span class="line">do</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<h2 id="until循环"><a href="#until循环" class="headerlink" title="until循环"></a>until循环</h2><p>和while循环的意思相反，当test command的返回值非0时，循环体才执行</p>
-<h2 id="break，continue"><a href="#break，continue" class="headerlink" title="break，continue"></a>break，continue</h2><ol>
-<li><p>break，continue默认作用于当前循环</p>
-</li>
-<li><p>break n ，continue n作用于第n层循环 当前循环的level为1，往外一层就+1</p>
-</li>
-</ol>
-<h2 id="重定向for循环的输出"><a href="#重定向for循环的输出" class="headerlink" title="重定向for循环的输出"></a>重定向for循环的输出</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">for iter in list</span><br><span class="line">do</span><br><span class="line">done &gt; text.txt</span><br><span class="line"></span><br><span class="line">for iter in list</span><br><span class="line">do</span><br><span class="line">done | sort</span><br></pre></td></tr></table></figure>
-
-
-          
+          <p>Linux shell编程学习，持续更新…</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/10/19/Linux/Linux-shell脚本编程学习/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
