@@ -2,23 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://hexiecs.com/2019/10/19/English/%E5%86%99%E4%BD%9CIDEA%E6%80%BB%E7%BB%93/</loc>
+    <loc>http://hexiecs.com/2019/10/19/Linux-shell%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0/</loc>
     
-    <lastmod>2019-11-07T00:49:35.664Z</lastmod>
+    <lastmod>2019-11-17T15:18:42.467Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://hexiecs.com/2019/09/12/Linux/Linux%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AD%A6%E4%B9%A0/</loc>
     
-    <lastmod>2019-11-02T14:02:24.743Z</lastmod>
+    <lastmod>2019-11-17T13:46:27.290Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://hexiecs.com/2019/10/19/English/%E5%86%99%E4%BD%9C%E8%AF%8D%E6%B1%87%E6%80%BB%E7%BB%93/</loc>
     
-    <lastmod>2019-10-31T00:50:11.810Z</lastmod>
+    <lastmod>2019-11-15T00:51:29.563Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://hexiecs.com/2019/10/19/English/%E5%86%99%E4%BD%9CIDEA%E6%80%BB%E7%BB%93/</loc>
+    
+    <lastmod>2019-11-13T00:23:19.436Z</lastmod>
     
   </url>
   
@@ -142,14 +149,14 @@
   </url>
   
   <url>
-    <loc>http://hexiecs.com/2017/04/02/Linux/unlink%20and%20hard%20link%20and%20soft%20link/</loc>
+    <loc>http://hexiecs.com/2017/03/21/Linux/setuid%20bit/</loc>
     
     <lastmod>2019-09-06T15:34:06.924Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://hexiecs.com/2017/03/21/Linux/setuid%20bit/</loc>
+    <loc>http://hexiecs.com/2017/04/02/Linux/unlink%20and%20hard%20link%20and%20soft%20link/</loc>
     
     <lastmod>2019-09-06T15:34:06.924Z</lastmod>
     
