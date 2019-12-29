@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Dynamic Programming Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-21T13:42:06.031Z">
+<meta property="og:updated_time" content="2019-12-29T15:35:56.687Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-String DP">
 <meta name="twitter:description" content="The Dynamic Programming Problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  435 字
+                  434 字
                 </span>
               
 
@@ -479,7 +479,7 @@
         <p>The Dynamic Programming Problems in LeetCode</p>
 <a id="more"></a>
 
-<h1 id="LeetCode-DP"><a href="#LeetCode-DP" class="headerlink" title="LeetCode- DP"></a>LeetCode- DP</h1><h2 id="Word-Break"><a href="#Word-Break" class="headerlink" title="Word Break"></a><a href="https://leetcode.com/problems/word-break/" target="_blank" rel="noopener">Word Break</a></h2><h3 id="Brief-Description"><a href="#Brief-Description" class="headerlink" title="Brief Description:"></a>Brief Description:</h3><p>Given a string s and a dictionary, to check if the string can be sperated into several substrings that belongs to the dictionary. The word of the dictionary can be used multiple times.</p>
+<h2 id="Word-Break"><a href="#Word-Break" class="headerlink" title="Word Break"></a><a href="https://leetcode.com/problems/word-break/" target="_blank" rel="noopener">Word Break</a></h2><h3 id="Brief-Description"><a href="#Brief-Description" class="headerlink" title="Brief Description:"></a>Brief Description:</h3><p>Given a string s and a dictionary, to check if the string can be sperated into several substrings that belongs to the dictionary. The word of the dictionary can be used multiple times.</p>
 <h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution:"></a>Solution:</h3><p>Firstly, a simple brute-force solution is to iterate the dictionary and check if the word of it matches the string, and if yes, we move the cursor of the string forward; if not, we try another word of the dictionary. However, this method can be sort of time-costing because we may check the same substring for multiple times. A better method is dynamic programming if we can notice the problem can be divided into sub problems in fact because checking the string equals to checking current word and the substring. By using dp, we don’t need to check the same substring for multiple times. And the transition equation is :</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dp[i] means the check status of the substring starting from position i</span><br><span class="line">dp[i] = 0, if for any word from dict, the dp[i + word.size()] = 0</span><br><span class="line">dp[i] = 1, if one of the word from dict statisfying dp[i + word.size()] = 1</span><br></pre></td></tr></table></figure>
 
@@ -749,7 +749,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LeetCode-DP"><span class="nav-number">1.</span> <span class="nav-text">LeetCode- DP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">1.2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>

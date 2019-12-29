@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Tree Problems in LeetCode.">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-29T15:28:47.075Z">
+<meta property="og:updated_time" content="2019-12-29T15:35:41.049Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Trees">
 <meta name="twitter:description" content="The Tree Problems in LeetCode.">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  250 字
+                  249 字
                 </span>
               
 
@@ -479,7 +479,7 @@
         <p>The Tree Problems in LeetCode.</p>
 <a id="more"></a>
 
-<h1 id="LeetCode-Trees"><a href="#LeetCode-Trees" class="headerlink" title="LeetCode-Trees"></a>LeetCode-Trees</h1><h2 id="Validate-Binary-Search-Tree"><a href="#Validate-Binary-Search-Tree" class="headerlink" title="Validate Binary Search Tree"></a><a href="https://leetcode.com/problems/validate-binary-search-tree/" target="_blank" rel="noopener">Validate Binary Search Tree</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Valid whether a tree is a BST.</p>
+<h2 id="Validate-Binary-Search-Tree"><a href="#Validate-Binary-Search-Tree" class="headerlink" title="Validate Binary Search Tree"></a><a href="https://leetcode.com/problems/validate-binary-search-tree/" target="_blank" rel="noopener">Validate Binary Search Tree</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Valid whether a tree is a BST.</p>
 <h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>To validate a BST, a straightforward solution is to inorder traverse the tree, and form an array. Then just to check whether the array is in ascending order. However, a better solution that requires less time and memory is to determine the result when traverse the tree rather than need a extra array. Using the idea of the array, in fact, the apperance order of numbers in the array is the arriving orders of nodes when we in order traverse the tree, which  means, if a number is right before another number in the array, then its the previous nodes before the another nodes in inorder traversal. So we just need to save the previous node when we traverse, and to promise it is less than the current node to form an ascending order.</p>
 <h2 id="Binary-Tree-Level-Order-Traversal"><a href="#Binary-Tree-Level-Order-Traversal" class="headerlink" title="Binary Tree Level Order Traversal"></a><a href="https://leetcode.com/problems/binary-tree-level-order-traversal/" target="_blank" rel="noopener">Binary Tree Level Order Traversal</a></h2><h3 id="Description-1"><a href="#Description-1" class="headerlink" title="Description"></a>Description</h3><p>Given a binary tree, output the nodes by level order (nodes in one level output as a vector).</p>
 <h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>The idea is simple - do BFS by using a queue to store the children of the nodes. But determining when to terminate current level and move to the next level is a little tricky, we can get the total number of nodes in next level after we finish traversing current level. When we are traversing the next level, it is easy to determine when to terminate because we have known the total number of nodes in that level.</p>
@@ -749,7 +749,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LeetCode-Trees"><span class="nav-number">1.</span> <span class="nav-text">LeetCode-Trees</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Validate-Binary-Search-Tree"><span class="nav-number">1.1.</span> <span class="nav-text">Validate Binary Search Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binary-Tree-Level-Order-Traversal"><span class="nav-number">1.2.</span> <span class="nav-text">Binary Tree Level Order Traversal</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Validate-Binary-Search-Tree"><span class="nav-number">1.</span> <span class="nav-text">Validate Binary Search Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binary-Tree-Level-Order-Traversal"><span class="nav-number">2.</span> <span class="nav-text">Binary Tree Level Order Traversal</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>

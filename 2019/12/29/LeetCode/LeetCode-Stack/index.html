@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Stack Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-29T14:57:06.076Z">
+<meta property="og:updated_time" content="2019-12-29T15:36:05.600Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Stack">
 <meta name="twitter:description" content="The Stack Problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  222 字
+                  221 字
                 </span>
               
 
@@ -479,7 +479,7 @@
         <p>The Stack Problems in LeetCode</p>
 <a id="more"></a>
 
-<h1 id="LeetCode-Stack"><a href="#LeetCode-Stack" class="headerlink" title="LeetCode-Stack"></a>LeetCode-Stack</h1><h2 id="Basic-Calculator"><a href="#Basic-Calculator" class="headerlink" title="Basic Calculator"></a><a href="https://leetcode.com/problems/basic-calculator/" target="_blank" rel="noopener">Basic Calculator</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Given a string of non-negative numbers, ‘+’, ‘-‘ and parentheses, calculate its value. You can assume the expression is valid.</p>
+<h2 id="Basic-Calculator"><a href="#Basic-Calculator" class="headerlink" title="Basic Calculator"></a><a href="https://leetcode.com/problems/basic-calculator/" target="_blank" rel="noopener">Basic Calculator</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Given a string of non-negative numbers, ‘+’, ‘-‘ and parentheses, calculate its value. You can assume the expression is valid.</p>
 <h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>Since there are parentheses in the expression, we usually need a stack to implement it. When we encounter a ‘(‘, we push numbers or operators onto stack, and pop them when we encounter a ‘)’. When we calculate numbers inside a pair of parentheses, it is easy to iterate from left to right and process the sign of each number and finally get the value. However, after we complete the value of a pair of parentheses expression, the sign of the value is non obvious. Take the expression ‘1 - (2 - 3)’ for example, when we get the result of (2 - 3), how can we know it’s negtive or positive? So there must be somewhere we store the minus sign in this example. We may notice that the minus sign is used after the parentheses expression is finished, which is at the same time as the number 1. The key idea is that we should save the sign and current calculated numbers in stacks when we encounter a left ‘(‘ which means we need to calculate another ‘current value’ so the existed current value need to be saved right now and be poped when the another value is finished.</p>
 
       
@@ -743,7 +743,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LeetCode-Stack"><span class="nav-number">1.</span> <span class="nav-text">LeetCode-Stack</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Basic-Calculator"><span class="nav-number">1.1.</span> <span class="nav-text">Basic Calculator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Basic-Calculator"><span class="nav-number">1.</span> <span class="nav-text">Basic Calculator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>
