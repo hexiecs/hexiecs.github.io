@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="Linux shell编程学习，持续更新…">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-11-17T15:21:22.941Z">
+<meta property="og:updated_time" content="2019-11-24T07:33:16.233Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux&#x2F;Linux shell脚本编程学习">
 <meta name="twitter:description" content="Linux shell编程学习，持续更新…">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  887 字
+                  1k 字
                 </span>
               
 
@@ -538,8 +538,14 @@
 <li><p>break n ，continue n作用于第n层循环 当前循环的level为1，往外一层就+1</p>
 </li>
 </ol>
-<h2 id="重定向for循环的输出"><a href="#重定向for循环的输出" class="headerlink" title="重定向for循环的输出"></a>重定向for循环的输出</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">for iter in list</span><br><span class="line">do</span><br><span class="line">done &gt; text.txt</span><br><span class="line"></span><br><span class="line">for iter in list</span><br><span class="line">do</span><br><span class="line">done | sort</span><br></pre></td></tr></table></figure>
+<h2 id="重定向for循环的输出"><a href="#重定向for循环的输出" class="headerlink" title="重定向for循环的输出"></a>重定向for循环的输出</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">for iter in list</span><br><span class="line">do</span><br><span class="line">done &gt; text.txt</span><br><span class="line"></span><br><span class="line">for iter in lis t</span><br><span class="line">do</span><br><span class="line">done | sort</span><br></pre></td></tr></table></figure>
 
+<h2 id="获取脚本名字"><a href="#获取脚本名字" class="headerlink" title="获取脚本名字"></a>获取脚本名字</h2><p><code>$0</code>: 脚本名字，带运行时的路径</p>
+<p><code>basename $0</code> : 脚本名字，忽略路径</p>
+<h2 id="特殊的脚本变量"><a href="#特殊的脚本变量" class="headerlink" title="特殊的脚本变量"></a>特殊的脚本变量</h2><p>$#: 命令行参数的个数</p>
+<p>$*: 把所有的命令行参数作为一个完整的字符串</p>
+<p>$@: 把每个命令行参数作为独立的字符串</p>
+<h2 id="shift命令"><a href="#shift命令" class="headerlink" title="shift命令"></a>shift命令</h2><p>把所有的命令行参数向左移一位，比如<code>$2</code>变成<code>$1</code>, <code>$1</code>被去掉了。shift命令还可以带参数，表示左移几位。</p>
 
       
     </div>
@@ -597,6 +603,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/21/LeetCode/LeetCode-Linked-List/" rel="prev" title="LeetCode-Two Pointers">
+                LeetCode-Two Pointers <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -716,7 +726,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">27</span>
+                  <span class="site-state-item-count">34</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -727,7 +737,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -738,7 +748,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-count">34</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -800,7 +810,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#循环处理带有空格的文件名列表"><span class="nav-number">1.</span> <span class="nav-text">循环处理带有空格的文件名列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将命令列表放入后台执行"><span class="nav-number">2.</span> <span class="nav-text">将命令列表放入后台执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理多个数学算术表达式"><span class="nav-number">3.</span> <span class="nav-text">处理多个数学算术表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算术表达式"><span class="nav-number">4.</span> <span class="nav-text">算术表达式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#expr语句，比较麻烦"><span class="nav-number">4.1.</span> <span class="nav-text">expr语句，比较麻烦</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#null"><span class="nav-number">4.2.</span> <span class="nav-text">$[]</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bc-可支持浮点运算"><span class="nav-number">4.3.</span> <span class="nav-text">bc 可支持浮点运算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#if语句"><span class="nav-number">5.</span> <span class="nav-text">if语句</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#数字比较"><span class="nav-number">5.1.</span> <span class="nav-text">数字比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串比较"><span class="nav-number">5.2.</span> <span class="nav-text">字符串比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件比较"><span class="nav-number">5.3.</span> <span class="nav-text">文件比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#布尔逻辑"><span class="nav-number">5.4.</span> <span class="nav-text">布尔逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双圆括号"><span class="nav-number">5.5.</span> <span class="nav-text">双圆括号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双方括号"><span class="nav-number">5.6.</span> <span class="nav-text">双方括号</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#case表达式"><span class="nav-number">6.</span> <span class="nav-text">case表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#for循环"><span class="nav-number">7.</span> <span class="nav-text">for循环</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一种方式"><span class="nav-number">7.1.</span> <span class="nav-text">第一种方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C风格for循环"><span class="nav-number">7.2.</span> <span class="nav-text">C风格for循环</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#while循环"><span class="nav-number">8.</span> <span class="nav-text">while循环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#until循环"><span class="nav-number">9.</span> <span class="nav-text">until循环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#break，continue"><span class="nav-number">10.</span> <span class="nav-text">break，continue</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重定向for循环的输出"><span class="nav-number">11.</span> <span class="nav-text">重定向for循环的输出</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#循环处理带有空格的文件名列表"><span class="nav-number">1.</span> <span class="nav-text">循环处理带有空格的文件名列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将命令列表放入后台执行"><span class="nav-number">2.</span> <span class="nav-text">将命令列表放入后台执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理多个数学算术表达式"><span class="nav-number">3.</span> <span class="nav-text">处理多个数学算术表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算术表达式"><span class="nav-number">4.</span> <span class="nav-text">算术表达式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#expr语句，比较麻烦"><span class="nav-number">4.1.</span> <span class="nav-text">expr语句，比较麻烦</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#null"><span class="nav-number">4.2.</span> <span class="nav-text">$[]</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bc-可支持浮点运算"><span class="nav-number">4.3.</span> <span class="nav-text">bc 可支持浮点运算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#if语句"><span class="nav-number">5.</span> <span class="nav-text">if语句</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#数字比较"><span class="nav-number">5.1.</span> <span class="nav-text">数字比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串比较"><span class="nav-number">5.2.</span> <span class="nav-text">字符串比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件比较"><span class="nav-number">5.3.</span> <span class="nav-text">文件比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#布尔逻辑"><span class="nav-number">5.4.</span> <span class="nav-text">布尔逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双圆括号"><span class="nav-number">5.5.</span> <span class="nav-text">双圆括号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双方括号"><span class="nav-number">5.6.</span> <span class="nav-text">双方括号</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#case表达式"><span class="nav-number">6.</span> <span class="nav-text">case表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#for循环"><span class="nav-number">7.</span> <span class="nav-text">for循环</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一种方式"><span class="nav-number">7.1.</span> <span class="nav-text">第一种方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C风格for循环"><span class="nav-number">7.2.</span> <span class="nav-text">C风格for循环</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#while循环"><span class="nav-number">8.</span> <span class="nav-text">while循环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#until循环"><span class="nav-number">9.</span> <span class="nav-text">until循环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#break，continue"><span class="nav-number">10.</span> <span class="nav-text">break，continue</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重定向for循环的输出"><span class="nav-number">11.</span> <span class="nav-text">重定向for循环的输出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取脚本名字"><span class="nav-number">12.</span> <span class="nav-text">获取脚本名字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特殊的脚本变量"><span class="nav-number">13.</span> <span class="nav-text">特殊的脚本变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shift命令"><span class="nav-number">14.</span> <span class="nav-text">shift命令</span></a></li></ol></div>
             
 
           </div>
