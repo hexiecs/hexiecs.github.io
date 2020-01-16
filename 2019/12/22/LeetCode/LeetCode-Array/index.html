@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Array Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-29T15:36:25.205Z">
+<meta property="og:updated_time" content="2020-01-05T07:09:45.508Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Array">
 <meta name="twitter:description" content="The Array Problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  105 字
+                  274 字
                 </span>
               
 
@@ -486,6 +486,8 @@
 <li>some integers are missed, to find it, if we put every integer in its exact position, which means, 1 is the first element, 2 is the second…, so there must be some positions where its value doesn’t match.</li>
 </ol>
 <p>So we put every integer in its ought position. After that, the first position that value is not pos + 1 is the answer. </p>
+<h2 id="Longest-Consecutive-Sequence"><a href="#Longest-Consecutive-Sequence" class="headerlink" title="Longest Consecutive Sequence"></a><a href="https://leetcode.com/problems/longest-consecutive-sequence/" target="_blank" rel="noopener">Longest Consecutive Sequence</a></h2><h3 id="Description-1"><a href="#Description-1" class="headerlink" title="Description"></a>Description</h3><p>Given an unsorted array of integers, find the length of the longest consecutive elements sequence. E.g. the array is [100, 4, 200, 1, 3, 2], the longest consecutive elements sequence is 1, 2, 3, 4, So the length is 4.</p>
+<h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>The complexity needs to be O(n). We can use unordered_map to maintain the longest consecutive sequence of each element. To do that, we iterate over every element, if it has been visited, we skip it because it won’t contribute to this element’s result or any other element’s. If it has not been visited, let’s say the element is n. If n+1 or n-1 is visited, it will extend the result of n+1 or n-1 or both. If neither of them is visited, we just init the result of n as 1. Note that if both of n+1 and n-1 have been visited,  then the element n can link the two sequence into one whole sequence.</p>
 
       
     </div>
@@ -750,7 +752,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#First-Missing-Positive"><span class="nav-number">1.</span> <span class="nav-text">First Missing Positive</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#First-Missing-Positive"><span class="nav-number">1.</span> <span class="nav-text">First Missing Positive</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Longest-Consecutive-Sequence"><span class="nav-number">2.</span> <span class="nav-text">Longest Consecutive Sequence</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>

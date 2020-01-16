@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Dynamic Programming Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-29T15:35:56.687Z">
+<meta property="og:updated_time" content="2020-01-14T00:39:55.750Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-String DP">
 <meta name="twitter:description" content="The Dynamic Programming Problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  434 字
+                  893 字
                 </span>
               
 
@@ -455,7 +455,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2 分钟
+                  5 分钟
                 </span>
               
             </div>
@@ -485,6 +485,23 @@
 
 <h2 id="Word-Break-II"><a href="#Word-Break-II" class="headerlink" title="Word Break II"></a><a href="https://leetcode.com/problems/word-break-ii/" target="_blank" rel="noopener">Word Break II</a></h2><h3 id="Brief-Description-1"><a href="#Brief-Description-1" class="headerlink" title="Brief Description"></a>Brief Description</h3><p>Given a string and a dictionary, you can add spaces to the string to make it a sentence and every word of the sentence belongs to the dictionary. Return all such possible sentences.</p>
 <h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>It is similar to the previous problem “word break”, but a little bit harder. The difference is that it needs to construct and return sentences rather than just check sentences. However, the solution is almost the same – string dp. To return all possible sentences, we need to use dp array to memorize the resulting sentences that current string can construct. For example, dp[i] means all such sentences of substring start from position i. To use less memory, we don’t actually store the string, instead we just store the cursor of these words. Also, we need to know whether we can get a valid sentence if we choose a word from dict, so I use the array vis to store the status of if a substring can construct any valid sentences. One thing  need to mention is that I don’t use backtracking here, instead I just search from left to right, so the order between the words in sentences and in dp array is total reversed. I realized that a backtracking dp solution is easier to code in this problem because we can put the end word of the string to the result of the rest of the string. </p>
+<h2 id="Odd-Even-Jump"><a href="#Odd-Even-Jump" class="headerlink" title="Odd Even Jump"></a><a href="https://leetcode.com/problems/odd-even-jump/" target="_blank" rel="noopener">Odd Even Jump</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Given an integer array A. From some starting index, you can make a series of jumps. The (1st, 3rd, 5th…) jumps are called odd jumps, and the (2nd, 4th, 6th…) jumps are called even jumps.</p>
+<p>You may from index i jump to index j (with i &lt; j) in the following way:</p>
+<ul>
+<li>During odd numbered jumps, you jump to the index j such that A[i] &lt;= A[j] and A[j] is the smallest possible value. If there are multiple such indexes j, you can only jump to the smallest such index j.</li>
+<li>During even numbered jumps, you jump to the index j such that A[i] &gt;= A[j] and A[j] is the largest possible value. If there are multiple such indexes, you can only jump to the smallest such index j.</li>
+</ul>
+<p>A starting index is good if from that index, you can reach the end of the array by jumping some number of jumps (possible 0 or more than once).</p>
+<p>Find the number of good starting indexes.</p>
+<h3 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h3><p>Whether a index can reach the end index depends on the next jump index of it (which is determined) and it’s odd or even jump, so this is a dp problem. The dp equality is:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dp[i][0] = dp[j][1]</span><br><span class="line">dp[i][1] = dp[j][0]</span><br><span class="line">where 0 denotes odd and 1 denotes even, and j is the next jumping index of i.</span><br><span class="line">dp[n - 1][0] = dp[n - 1][1] = 1</span><br><span class="line">where n is the size of the array.</span><br></pre></td></tr></table></figure>
+
+<p>The problem here is how we can get j, the next jumping point of index i. A brute force solution is to iterate from i to the end of array every time when we want to find j, which makes the whole time complexity to O(n^2). We can optimize this by following way:</p>
+<ul>
+<li>Iterate from the end of the array, using a hashmap to record every number and its index. Since when we can only jump to the smallest indexes when there are multiple same values so we can safely override same number in the map.</li>
+<li>At each iterate, let’s say current number is A[i], we can get smallest A[j] which is greater or equal than A[i] by using map’s lower_bound method, which is O(log(n)). </li>
+<li>As for getting the A[j] which is smaller or equal than A[i], there is a trick. If we simply move the lower_bound’s result iterator to a previous iterator, we can only get the A[j] which is smaller than A[i]. To get the equal value when possible, when we find the lower_bound’s result is equal to A[i], we should move the iterator to the next. </li>
+</ul>
 
       
     </div>
@@ -533,8 +550,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/03/22/Network/difference between close() and shutdown() when TCP terminate/" rel="next" title="socket编程中close()和shutdown()的区别">
-                <i class="fa fa-chevron-left"></i> socket编程中close()和shutdown()的区别
+              <a href="/2017/03/26/Linux/getopt and getopt_long/" rel="next" title="Linux getopt和getopt_long函数">
+                <i class="fa fa-chevron-left"></i> Linux getopt和getopt_long函数
               </a>
             
           </div>
@@ -543,8 +560,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/03/26/Linux/getopt and getopt_long/" rel="prev" title="Linux getopt和getopt_long函数">
-                Linux getopt和getopt_long函数 <i class="fa fa-chevron-right"></i>
+              <a href="/2017/03/26/C++/C++ object initialize/" rel="prev" title="C++对象初始化">
+                C++对象初始化 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -749,7 +766,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Odd-Even-Jump"><span class="nav-number">3.</span> <span class="nav-text">Odd Even Jump</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>

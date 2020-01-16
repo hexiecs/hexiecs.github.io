@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Two Pointers problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-29T15:36:32.971Z">
+<meta property="og:updated_time" content="2020-01-15T00:36:47.030Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Two Pointers">
 <meta name="twitter:description" content="The Two Pointers problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  378 字
+                  1k 字
                 </span>
               
 
@@ -455,7 +455,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2 分钟
+                  6 分钟
                 </span>
               
             </div>
@@ -485,6 +485,37 @@
 <h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>Also use two pointers as the previous problem, but need some math observation.  Let the distance that the slow pointer has walked when the two pointers meet  is <code>k</code>, so the distance of the fast pointer is <code>2k</code>. And the substraction of this two distances  <code>2k - k = k</code>is exactly the length of the cycle. Let the distance between the start node of the list and the start node of the cycle is <code>s</code>, and the distance between the start node of the cycle and the first meeting node of the pointers is <code>m</code>,  then <code>s + m = k</code>, so <code>s = k - m</code> where the <code>k</code> is the length of the circle. To find the  start node of the cycle, we let a pointer start from the first meeting node, and another pointer start from the start node of the list, and both of them go forward one step at a time. When they meet, the first pointer goes exactly k - m steps which is the answer, so the second pointer is the start node of the cycle.</p>
 <h2 id="Find-the-Duplicate-Number"><a href="#Find-the-Duplicate-Number" class="headerlink" title="Find the Duplicate Number"></a><a href="https://leetcode.com/problems/find-the-duplicate-number/" target="_blank" rel="noopener">Find the Duplicate Number</a></h2><h3 id="Description-2"><a href="#Description-2" class="headerlink" title="Description"></a>Description</h3><p>Give an integer array which has n + 1 numbers and numbers range from 1 to n. Assume there is only a duplicate number and find it.</p>
 <h3 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h3><p>This is the integer version of the previous problem, and the solution is the same. If we treat the integer array as a linked list which means using the value of integer as the next jumping position. Suppose we have an array [2, 1, 3], then the index-&gt;value map is : 0-&gt;2, 1-&gt;1, 2-&gt;3. And the linked list is 0-&gt;2-&gt;3, and 3 is beyond the array index limit. If there is a duplicate number in the array, then the linked list must has a cycle, and the duplicate number is the start node of the cycle. </p>
+<h2 id="Copy-List-with-Random-Pointer"><a href="#Copy-List-with-Random-Pointer" class="headerlink" title="Copy List with Random Pointer"></a><a href="https://leetcode.com/problems/copy-list-with-random-pointer/" target="_blank" rel="noopener">Copy List with Random Pointer</a></h2><h3 id="Description-3"><a href="#Description-3" class="headerlink" title="Description"></a>Description</h3><p>Given a linked list that each node has an additional random pointer which could point to any node in the list or null. Do a deep copy of the linked list.</p>
+<h3 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h3><p>An intuitive solution would be using a hash map to store the relationship between original node and copy node which has a time complexity of O(1) and space complexity of O(n). We can optimize the space complexity to O(1) by not using map to store the relationship, instead we directly put each copy node to the next of its original node. So when we want to find the random pointer node of a copy node, we just take the node after the random node of its original node. In detail, the algorithm runs three rounds:</p>
+<ol>
+<li>iterate the linked list and put each copy node to the next of original node.</li>
+<li>we assign the random pointer of copy node by using the next node of the random node of original node.</li>
+<li>extract the copy node from the linked list. </li>
+</ol>
+<h2 id="Sort-List"><a href="#Sort-List" class="headerlink" title="Sort List"></a><a href="https://leetcode.com/problems/sort-list/" target="_blank" rel="noopener">Sort List</a></h2><h3 id="Description-4"><a href="#Description-4" class="headerlink" title="Description"></a>Description</h3><p>Sort a linked list in O(nlog(n)) time complexity and constant space complexity.</p>
+<h3 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h3><h4 id="Recursive-way"><a href="#Recursive-way" class="headerlink" title="Recursive way"></a>Recursive way</h4><p>In fact, the space complexity of recursive solution is not constant. it’s O(log(n)).</p>
+<p>Basic idea is merge sort, but there are two questiones needed to be figured out:</p>
+<ul>
+<li><p>How to split a linked list into two in a merge sort process?</p>
+<p>Well, we can iterate the linked list first to get the length of it. Then iterate from the head again to get the middle node of the list. So the two part are the head and the middle node. The complexity of this is O(n).</p>
+</li>
+<li><p>Since we can’t swap two nodes of linked list as the array, how can we merge two linked list in place and finally place the merged linked list in the original linked list?</p>
+<p>To merge two linked lists in place, we need a head pointer to record the head of the two linked list. The basic logic is:</p>
+<ol>
+<li><p>if head == NULL, head = n1 or n2 (depends on the order)</p>
+</li>
+<li><p>if n1 &lt; n2, head-&gt;next = n1; otherwise head-&gt;next = n2; </p>
+</li>
+<li><p>loop until n1== NULL or n2 =NULL or n1 reach list1 length or n2 reach list2 length. Here two linked list are not guaranteed end with NULL because we may merge two linked list of the middle of original linked list, so we need to pass length of each list into the merge function, which can be gotten from the split process.</p>
+</li>
+<li><p>This is a recursive process, every time we merge two linked lists and return the result list.</p>
+</li>
+</ol>
+</li>
+</ul>
+<h4 id="Iterative-way"><a href="#Iterative-way" class="headerlink" title="Iterative way"></a>Iterative way</h4><p>Since the recursive way is not constant space complexity, we need to use a iterative way.</p>
+<p>Firstly, how to merge two arrays using iterative way? We can merge length 1 subarray first, and then merge length 2 subarrays, and then merge length 4  subarrays… until the whole array is merged. This process can be easily implemented by a for loop, and the loop variant is the length of subarray we currently merge. </p>
+<p>So the problem is to apply this solution to linked list. Similarly, we use a for loop to merge different length of sub linked list from length 1 to length n. We first split the linked list into two sub linked lists of current length, then merge them and go to next two sub linked list. But when we merge two sub linked lists, we need to pass the previous node of the two sub linked lists to the merge function because we need to save the merged list to originial list. To ensure every node has a previous node, we need to create a dummy node before the head of the list.</p>
 
       
     </div>
@@ -749,7 +780,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Linked-List-Cycle"><span class="nav-number">1.</span> <span class="nav-text">Linked List Cycle</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linked-List-Cycle-II"><span class="nav-number">2.</span> <span class="nav-text">Linked List Cycle II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Find-the-Duplicate-Number"><span class="nav-number">3.</span> <span class="nav-text">Find the Duplicate Number</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Linked-List-Cycle"><span class="nav-number">1.</span> <span class="nav-text">Linked List Cycle</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linked-List-Cycle-II"><span class="nav-number">2.</span> <span class="nav-text">Linked List Cycle II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Find-the-Duplicate-Number"><span class="nav-number">3.</span> <span class="nav-text">Find the Duplicate Number</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Copy-List-with-Random-Pointer"><span class="nav-number">4.</span> <span class="nav-text">Copy List with Random Pointer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-3"><span class="nav-number">4.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-3"><span class="nav-number">4.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sort-List"><span class="nav-number">5.</span> <span class="nav-text">Sort List</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-4"><span class="nav-number">5.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-4"><span class="nav-number">5.2.</span> <span class="nav-text">Solution</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Recursive-way"><span class="nav-number">5.2.1.</span> <span class="nav-text">Recursive way</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Iterative-way"><span class="nav-number">5.2.2.</span> <span class="nav-text">Iterative way</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
