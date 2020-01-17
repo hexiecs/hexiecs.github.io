@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://hexiecs.com/"/>
-  <updated>2019-12-31T00:32:03.796Z</updated>
+  <updated>2020-01-17T00:58:05.397Z</updated>
   <id>http://hexiecs.com/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>LeetCode-Queue</title>
+    <link href="http://hexiecs.com/2020/01/17/LeetCode/LeetCode-Queue/"/>
+    <id>http://hexiecs.com/2020/01/17/LeetCode/LeetCode-Queue/</id>
+    <published>2020-01-17T00:34:52.000Z</published>
+    <updated>2020-01-17T00:58:05.397Z</updated>
+    
+    <content type="html"><![CDATA[<p>Problems solved by queue.</p><a id="more"></a><h2 id="Sliding-Window-Maximum"><a href="#Sliding-Window-Maximum" class="headerlink" title="Sliding Window Maximum"></a><a href="https://leetcode.com/problems/sliding-window-maximum/" target="_blank" rel="noopener">Sliding Window Maximum</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Given an array of integers, you have a window size K moving from the very left to the very right, get the maximum number of every window.</p><h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>Use a mononic queue to store the integers of current window in descending order, so we can get the maximum number by the head of the queue, which is O(1). To maintain the queue, every time we push an integer to the queue, we can pop_back all integers that are less than current integer, which making the queue in a descending order. We can do this way because current integer is larger by the poped integers and current position is also larger than the poped positions, so if current integers and poped integers appear at the same time in a window, the poped integers can’t be the largest one. Besides, since the window moves the integers outside in a left to right order, we need to record how many integers are poped back by current integers. When current integer needs to be moved outside from the window, we should move the integers it poped back outside first because those integers’ position is less than current integer’s, so we just decrease the count of the integers poped back by current integer by one if current integer is being moved outside. If the count has become zero, it is the time to pop current integer.</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Problems solved by queue.&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="LeetCode" scheme="http://hexiecs.com/categories/LeetCode/"/>
+    
+    
+      <category term="LeetCode" scheme="http://hexiecs.com/tags/LeetCode/"/>
+    
+      <category term="Queue" scheme="http://hexiecs.com/tags/Queue/"/>
+    
+  </entry>
   
   <entry>
     <title>LeetCode-Stack</title>
@@ -404,9 +429,9 @@
       <category term="Distribute" scheme="http://hexiecs.com/categories/Distribute/"/>
     
     
-      <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
-    
       <category term="Paper" scheme="http://hexiecs.com/tags/Paper/"/>
+    
+      <category term="Distribute" scheme="http://hexiecs.com/tags/Distribute/"/>
     
       <category term="File System" scheme="http://hexiecs.com/tags/File-System/"/>
     
@@ -480,29 +505,6 @@
     
     
       <category term="protobuf" scheme="http://hexiecs.com/tags/protobuf/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux的unlink()、硬链接、软链接</title>
-    <link href="http://hexiecs.com/2017/04/02/Linux/unlink%20and%20hard%20link%20and%20soft%20link/"/>
-    <id>http://hexiecs.com/2017/04/02/Linux/unlink and hard link and soft link/</id>
-    <published>2017-04-01T16:56:00.000Z</published>
-    <updated>2019-09-06T15:34:06.924Z</updated>
-    
-    <content type="html"><![CDATA[<p>硬链接软链接是Linux文件系统很重要的概念</p><a id="more"></a>  <h1 id="unlink"><a href="#unlink" class="headerlink" title="unlink()"></a>unlink()</h1><p>Linux每个文件有自己的引用计数和链接计数，存放在inode结构体中。<br>unlink(char *pathname)函数会对pathname路径对应文件的链接计数减1，如果此时链接计数变为0，并且此文件的引用计数也为0，此文件内容就会被删除。<br>当open一个存在的文件时，文件的引用计数会加1，close一个文件时，引用计数会减1，但都不影响文件的链接计数。只有创建一个文件时，文件的引用计数会初始为1，调用link函数会为一个文件创建一个硬链接，该文件的链接计数相应加1。调用symlink函数创建一个软链接，不影响链接计数。</p><h1 id="硬链接和软链接的区别"><a href="#硬链接和软链接的区别" class="headerlink" title="硬链接和软链接的区别"></a>硬链接和软链接的区别</h1><p>硬链接是有着相同inode号仅文件名不同的文件，因此硬链接存在以下几点特性：</p><ul><li>文件有相同的 inode 及 data block；</li><li>只能对已存在的文件进行创建；</li><li>不能交叉文件系统进行硬链接的创建；</li><li>不能对目录进行创建，只可对文件创建；</li><li>删除一个硬链接文件并不影响其他有相同 inode 号的文件。  </li></ul><p>软链接与硬链接不同，若文件用户数据块中存放的内容是另一文件的路径名的指向，则该文件就是软连接。软链接就是一个普通文件，只是数据块内容有点特殊。软链接有着自己的inode号以及用户数据块。因此软链接的创建与使用没有类似硬链接的诸多限制：</p><ul><li>软链接有自己的文件属性及权限等；</li><li>可对不存在的文件或目录创建软链接；</li><li>软链接可交叉文件系统；</li><li>软链接可对文件或目录创建；</li><li>创建软链接时，链接计数 i_nlink 不会增加；</li><li>删除软链接并不影响被指向的文件，但若被指向的原文件被删除，则相关软连接被称为死链接（即 dangling link，若被指向路径文件被重新创建，死链接可恢复为正常的软链接）。<br>至于为什么硬链接不能对目录创建，是为了防止目录出现循换，这个网站的例子举得很好：<a href="http://ask.apelearn.com/question/5565。" target="_blank" rel="noopener">http://ask.apelearn.com/question/5565。</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;硬链接软链接是Linux文件系统很重要的概念&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="Linux" scheme="http://hexiecs.com/categories/Linux/"/>
-    
-    
-      <category term="linux" scheme="http://hexiecs.com/tags/linux/"/>
     
   </entry>
   
