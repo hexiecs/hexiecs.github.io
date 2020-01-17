@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Array Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-01-05T07:09:45.508Z">
+<meta property="og:updated_time" content="2020-01-17T15:11:12.074Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Array">
 <meta name="twitter:description" content="The Array Problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  274 字
+                  594 字
                 </span>
               
 
@@ -455,7 +455,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1 分钟
+                  3 分钟
                 </span>
               
             </div>
@@ -488,6 +488,10 @@
 <p>So we put every integer in its ought position. After that, the first position that value is not pos + 1 is the answer. </p>
 <h2 id="Longest-Consecutive-Sequence"><a href="#Longest-Consecutive-Sequence" class="headerlink" title="Longest Consecutive Sequence"></a><a href="https://leetcode.com/problems/longest-consecutive-sequence/" target="_blank" rel="noopener">Longest Consecutive Sequence</a></h2><h3 id="Description-1"><a href="#Description-1" class="headerlink" title="Description"></a>Description</h3><p>Given an unsorted array of integers, find the length of the longest consecutive elements sequence. E.g. the array is [100, 4, 200, 1, 3, 2], the longest consecutive elements sequence is 1, 2, 3, 4, So the length is 4.</p>
 <h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>The complexity needs to be O(n). We can use unordered_map to maintain the longest consecutive sequence of each element. To do that, we iterate over every element, if it has been visited, we skip it because it won’t contribute to this element’s result or any other element’s. If it has not been visited, let’s say the element is n. If n+1 or n-1 is visited, it will extend the result of n+1 or n-1 or both. If neither of them is visited, we just init the result of n as 1. Note that if both of n+1 and n-1 have been visited,  then the element n can link the two sequence into one whole sequence.</p>
+<h2 id="Maximum-Product-Subarray"><a href="#Maximum-Product-Subarray" class="headerlink" title="Maximum Product Subarray"></a><a href="https://leetcode.com/problems/maximum-product-subarray/" target="_blank" rel="noopener">Maximum Product Subarray</a></h2><h3 id="Description-2"><a href="#Description-2" class="headerlink" title="Description"></a>Description</h3><p>Given an integer array, find the contiguous subarray which has the largest product.</p>
+<h3 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h3><p>We can iterate the array from left to right and find the largest product of  subarray which ends with current element. Let’s say current element is A[i] and A[i] &gt;= 0, and the largest product of subarray which ends with A[i-1] is p[i-1], so p[i] = max(A[i], p[i-1]*A[i]). When A[i] &lt; 0, to get p[i], we need to know the minimum product of subarray which ends with A[i-1], let’s call it m[i-1]. So p[i] = max(A[i], m[i-1] * A[i]). Obviously, we don’t need extra O(n) space to store p[i] or m[i] during the iteration, instead a single p[i] and m[i] to represent current subarray’s largest product is enough.</p>
+<h2 id="Product-of-Array-Except-Self"><a href="#Product-of-Array-Except-Self" class="headerlink" title="Product of Array Except Self"></a><a href="https://leetcode.com/problems/product-of-array-except-self/" target="_blank" rel="noopener">Product of Array Except Self</a></h2><h3 id="Description-3"><a href="#Description-3" class="headerlink" title="Description"></a>Description</h3><p>Given an array <code>nums</code> of n integers where n &gt; 1, return an array <code>output</code> where <code>output[i]</code> is equal to the product of all elements of <code>nums</code> except <code>nums[i]</code>. Note that division is forbidden and constant space and linear time is needed.</p>
+<h3 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h3><p>A straight forward solution is to use two arrays <code>left</code> and <code>right</code> where left[i] represents the product of all elements from 0 to i - 1 whereas right[i] represents the product of all elements from i + 1 to n-1, so the output[i] = left[i] * right[i]. But this makes a linear space solution, which needs to be optimized. We can use output array to replace left and right array. To do that, we first store results of left in output array in a left to right order iteration, and then we can use a single integer variable to represent current right[i] when we iterate from right to left. So output[i] = output[i] * right.</p>
 
       
     </div>
@@ -752,7 +756,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#First-Missing-Positive"><span class="nav-number">1.</span> <span class="nav-text">First Missing Positive</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Longest-Consecutive-Sequence"><span class="nav-number">2.</span> <span class="nav-text">Longest Consecutive Sequence</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#First-Missing-Positive"><span class="nav-number">1.</span> <span class="nav-text">First Missing Positive</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Longest-Consecutive-Sequence"><span class="nav-number">2.</span> <span class="nav-text">Longest Consecutive Sequence</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Maximum-Product-Subarray"><span class="nav-number">3.</span> <span class="nav-text">Maximum Product Subarray</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Product-of-Array-Except-Self"><span class="nav-number">4.</span> <span class="nav-text">Product of Array Except Self</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-3"><span class="nav-number">4.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-3"><span class="nav-number">4.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>
