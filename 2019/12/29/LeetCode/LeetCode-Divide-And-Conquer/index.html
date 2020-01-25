@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Divide And Conquer Problems in LeetCode.">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-29T15:36:15.332Z">
+<meta property="og:updated_time" content="2020-01-25T02:56:23.008Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Divide-And-Conquer">
 <meta name="twitter:description" content="The Divide And Conquer Problems in LeetCode.">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  683 字
+                  931 字
                 </span>
               
 
@@ -455,7 +455,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4 分钟
+                  5 分钟
                 </span>
               
             </div>
@@ -485,6 +485,11 @@
 <h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>Since this problem needs to generate all the specific BSTs, counting the number of BST is not enough but the idea is similar. In the previous problem, when we determine the number of BSTs with a sequence of 1..n, we divide it to left part and right part by choosing a root node and multiply the both to get a final answer. Similarly, when we generate BSTs with a number sequence of 1…n, we choose any number as a root node, and generate left tree and right tree recursively. After that, the current root node’s left child can be any one root node of left trees, and right child can be any root node of right trees of course. In code details, we need to solve the problem in a recursive way (iterative way can be very difficult to implement), and the parameters of recursive function is the start and end number of the sequence. We can choose any number belonging to the range and divide it to two part and process it recursively. The bottom case is that when start is larger than end, which shows that there is not any valid tree, instead of returning a empty result directly, we need to add a NULL pointer to the result vector, which can be used by the upper root node to set its child pointers.   </p>
 <h2 id="Different-Ways-to-Add-Parentheses"><a href="#Different-Ways-to-Add-Parentheses" class="headerlink" title="Different Ways to Add Parentheses"></a><a href="https://leetcode.com/problems/different-ways-to-add-parentheses/" target="_blank" rel="noopener">Different Ways to Add Parentheses</a></h2><h3 id="Description-2"><a href="#Description-2" class="headerlink" title="Description"></a>Description</h3><p>Given a string of numbers and operators, you can add parentheses to group numbers and operators, return all the possible results from computing all the possible ways to group numbers and operators. The operators contain ‘+’, ‘-‘ and ‘*’.</p>
 <h3 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h3><p>The key idea is that all the possible ways to group numbers and operators are all the cases that we use one operator as the last operator to be operated. No matter how we group them, there must be one operator to be operated at last, which equals to we add parentheses to the left part and  right part of it. So if we iterate over all the operators and treat any of them as the last one, we get all the possible ways. So the solutions is very similar to previous problem, we iterate the string until we meet an operator, and we calculate the left part and right part of the operator, which is a substring that can be calculated recursively. When we get the both part calculated, we combine them to get the answer of current operator, then we iterate to the next operator. To avoid calculating a substring for multiple times, we memorize the result of a substring after we calculate it. </p>
+<h2 id="Kth-Largest-Element-in-an-Array"><a href="#Kth-Largest-Element-in-an-Array" class="headerlink" title="Kth Largest Element in an Array"></a><a href="https://leetcode.com/problems/kth-largest-element-in-an-array/" target="_blank" rel="noopener">Kth Largest Element in an Array</a></h2><h3 id="Description-3"><a href="#Description-3" class="headerlink" title="Description"></a>Description</h3><p>Find the kth largest element in an unsorted array. Note that it is the kth largest element in the sorted order, not the kth distinct element.</p>
+<h3 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h3><p>There are multiple solutions to this problem, the two most well-known ways are max-heap and partition using ideas of quicksort.</p>
+<p>####heap</p>
+<p>Use a max heap to store the elements, then we pop k times to get the kth largest one, and the time complexity is O(n + klogn), space complexity is O(n). A small optimization is to only store the k largest elements in a min-heap, so the top element is the answer and the time complexity is O(nlogk), space time complexity is O(k).</p>
+<h4 id="partition"><a href="#partition" class="headerlink" title="partition"></a>partition</h4><p>The partition idea of quicksort is choosing a pivot and partition an array into two subarrays such that the left part is all less than the pivot and the right part is all larger than the pivot. So if the number of elements in left part is less than k, then the kth largest must be in the right part, otherwise it’s in the left part. So using partition function and a binary search, we can finally get the answer. The time complexity is T(n) = T(n/2) + O(n). The average time complexity is O(n) and the worst case is O(n^2). We can choose the pivot randomly to avoid the worst case and get a guaranteed time complexity of O(n).</p>
 
       
     </div>
@@ -535,8 +540,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/12/24/LeetCode/LeetCode-Trees/" rel="next" title="LeetCode-Trees">
-                <i class="fa fa-chevron-left"></i> LeetCode-Trees
+              <a href="/2019/12/24/LeetCode/LeetCode-Tree/" rel="next" title="LeetCode-Tree">
+                <i class="fa fa-chevron-left"></i> LeetCode-Tree
               </a>
             
           </div>
@@ -667,7 +672,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-count">35</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -689,7 +694,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">36</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -751,7 +756,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Unique-Binary-Search-Trees"><span class="nav-number">1.</span> <span class="nav-text">Unique Binary Search Trees</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Unique-Binary-Search-Trees-II"><span class="nav-number">2.</span> <span class="nav-text">Unique Binary Search Trees II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Different-Ways-to-Add-Parentheses"><span class="nav-number">3.</span> <span class="nav-text">Different Ways to Add Parentheses</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Unique-Binary-Search-Trees"><span class="nav-number">1.</span> <span class="nav-text">Unique Binary Search Trees</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Unique-Binary-Search-Trees-II"><span class="nav-number">2.</span> <span class="nav-text">Unique Binary Search Trees II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Different-Ways-to-Add-Parentheses"><span class="nav-number">3.</span> <span class="nav-text">Different Ways to Add Parentheses</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kth-Largest-Element-in-an-Array"><span class="nav-number">4.</span> <span class="nav-text">Kth Largest Element in an Array</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-3"><span class="nav-number">4.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-3"><span class="nav-number">4.2.</span> <span class="nav-text">Solution</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#partition"><span class="nav-number">4.2.1.</span> <span class="nav-text">partition</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>

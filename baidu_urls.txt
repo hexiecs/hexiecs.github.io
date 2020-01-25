@@ -1,7 +1,8 @@
+http://hexiecs.com/2020/01/20/LeetCode/LeetCode-Graph/
 http://hexiecs.com/2020/01/17/LeetCode/LeetCode-Queue/
 http://hexiecs.com/2019/12/29/LeetCode/LeetCode-Stack/
 http://hexiecs.com/2019/12/29/LeetCode/LeetCode-Divide-And-Conquer/
-http://hexiecs.com/2019/12/24/LeetCode/LeetCode-Trees/
+http://hexiecs.com/2019/12/24/LeetCode/LeetCode-Tree/
 http://hexiecs.com/2019/12/22/LeetCode/LeetCode-Array/
 http://hexiecs.com/2019/12/21/LeetCode/LeetCode-Linked-List/
 http://hexiecs.com/2019/10/19/Linux/Linux-shell脚本编程学习/
