@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Dynamic Programming Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-01-14T00:39:55.000Z">
+<meta property="og:updated_time" content="2020-01-25T06:43:19.809Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-String DP">
 <meta name="twitter:description" content="The Dynamic Programming Problems in LeetCode">
@@ -439,7 +439,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  893 字
+                  966 字
                 </span>
               
 
@@ -455,7 +455,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5 分钟
+                  6 分钟
                 </span>
               
             </div>
@@ -502,6 +502,8 @@
 <li>At each iterate, let’s say current number is A[i], we can get smallest A[j] which is greater or equal than A[i] by using map’s lower_bound method, which is O(log(n)). </li>
 <li>As for getting the A[j] which is smaller or equal than A[i], there is a trick. If we simply move the lower_bound’s result iterator to a previous iterator, we can only get the A[j] which is smaller than A[i]. To get the equal value when possible, when we find the lower_bound’s result is equal to A[i], we should move the iterator to the next. </li>
 </ul>
+<h2 id="Perfect-Squares"><a href="#Perfect-Squares" class="headerlink" title="Perfect Squares"></a><a href="https://leetcode.com/problems/perfect-squares/" target="_blank" rel="noopener">Perfect Squares</a></h2><h3 id="Description-1"><a href="#Description-1" class="headerlink" title="Description"></a>Description</h3><p>Given a positive integer n, find the least number of perfect square numbers(for example, 1, 4, 9, 16, …) which sum up to n.</p>
+<h3 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h3><p>we can use a dp array to store the result of each number. dp[i] = min(dp[i], dp[i - j ] + 1), where 1 &lt;=i &lt;= n and j is a perfect square number that’s less than i. The time complexity is O(n* sqrt(n)).</p>
 
       
     </div>
@@ -682,7 +684,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">36</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -704,7 +706,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-count">37</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -766,7 +768,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Odd-Even-Jump"><span class="nav-number">3.</span> <span class="nav-text">Odd Even Jump</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Odd-Even-Jump"><span class="nav-number">3.</span> <span class="nav-text">Odd Even Jump</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Perfect-Squares"><span class="nav-number">4.</span> <span class="nav-text">Perfect Squares</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">4.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-3"><span class="nav-number">4.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>

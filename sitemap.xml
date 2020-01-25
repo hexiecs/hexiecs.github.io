@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://hexiecs.com/2017/03/26/LeetCode/LeetCode-Dynamic%20Programming/</loc>
+    
+    <lastmod>2020-01-25T06:43:19.809Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://hexiecs.com/2020/01/25/LeetCode-Binary-Search/</loc>
+    
+    <lastmod>2020-01-25T06:21:04.995Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://hexiecs.com/2019/12/29/LeetCode/LeetCode-Divide-And-Conquer/</loc>
     
     <lastmod>2020-01-25T02:56:23.008Z</lastmod>
@@ -40,13 +54,6 @@
     <loc>http://hexiecs.com/2019/12/21/LeetCode/LeetCode-Linked-List/</loc>
     
     <lastmod>2020-01-15T00:36:47.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://hexiecs.com/2017/03/26/LeetCode/LeetCode-Dynamic%20Programming/</loc>
-    
-    <lastmod>2020-01-14T00:39:55.000Z</lastmod>
     
   </url>
   
