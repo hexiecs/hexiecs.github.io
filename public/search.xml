@@ -692,31 +692,6 @@
     
     
     <entry>
-      <title>Linux getopt和getopt_long函数</title>
-      <link href="/2017/03/26/Linux/getopt%20and%20getopt_long/"/>
-      <url>/2017/03/26/Linux/getopt%20and%20getopt_long/</url>
-      
-        <content type="html"><![CDATA[<p>本文讲讲Linux中用来处理命令行参数的函数getopt();  </p><a id="more"></a><h1 id="getopt"><a href="#getopt" class="headerlink" title="getopt"></a>getopt</h1><h2 id="函数参数"><a href="#函数参数" class="headerlink" title="函数参数"></a>函数参数</h2><p>函数原型为: </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int getopt(int argc, char * const argv[], const char *optstring);</span><br></pre></td></tr></table></figure><p>涉及的全局变量：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">extern char *optarg;</span><br><span class="line">extern int optind, opterr, optopt;</span><br></pre></td></tr></table></figure><p>包含的头文件：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br></pre></td></tr></table></figure><p>先说几个概念：  </p><ul><li>选项：指的是命令行参数中的<code>-</code>符号后面的字母，比如-a中a就是选项。</li><li>选项参数，指的是选项后面跟的值，有的选项后面必须有个值，有的选项后面没有值，有的选项后面可能有值。  </li></ul><p>getopt的函数声明中，argc为命令行参数的个数，argv[]为命令行参数列表，optstring为可能出现的选项的列表。<br>optstring:如果一个选项后面带有:，则该选项必须带选项参数。如果一个选项后面带有::,则该选项后面可能带参数。<br>如果一个选项后面可能带参数，那么在命令行中，该选项的参数跟该选项之间不能有空格，如果一个选项后面必须带参数，那么选项和它的参数之间可以有空格。<br>举个例子，比如现在的optarg为abc:d::，那么a和b后面没有参数，c后面必须有参数，d后面可能有参数。我们的命令行参数就可以是</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -a -b -c cvalue -ddvalue</span><br></pre></td></tr></table></figure><p>注意，d和dvalue之间没有空格。  </p><h2 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h2><ul><li>optarg: 指向当前选项的选项参数（如果有的话）</li><li>optind: 下一个选项的索引。<strong>getopt函数会重排命令行参数</strong>，所以选项都在argv数组的前面，当argv数组处理完毕后，如果optind &gt;= argc, 就说明出现了过多的选项。</li><li>opterr: 将opterr设为0，getopt将不打印错误信息。</li><li>optopt: 当getopt遇到一个未知的选项，或一个选项缺少要求的参数，optopt存储该选项。</li><li>返回值：函数的返回值为当前处理的选项，，如果getopt在optstring中找不到该选项或是缺少选项参数，getopt返回’?’,并且打印错误信息。如果optstring的第一个字母是’:’, 那么当缺少选项参数时，getopt返回’:’而不是’?’。如果不再有可识别的选项，getopt返回-1。</li></ul><h1 id="getopt-long"><a href="#getopt-long" class="headerlink" title="getopt_long"></a>getopt_long</h1><p>getopt_long函数可以处理长选项，就像–help这种，选项长度大于1个字母，需要以–开头。<br>函数声明：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;getopt.h&gt;</span><br><span class="line"></span><br><span class="line">int getopt_long(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex);</span><br></pre></td></tr></table></figure><p>前三个参数和getopt一样，第四个参数longopts指向option结构体数组，struct option定义如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct option&#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    int has_arg;</span><br><span class="line">    int *flag;</span><br><span class="line">    int val;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><ul><li>const char *name: 选项的名字</li><li>int has_arg：选项是否有参数。它的值为以下三种</li></ul><table><thead><tr><th>符号常量</th><th>数值</th><th>含义</th></tr></thead><tbody><tr><td>no_argument</td><td>0</td><td>选项没有参数</td></tr><tr><td>required_argument</td><td>1</td><td>选项需要参数</td></tr><tr><td>optional_argument</td><td>2</td><td>选项参数可选</td></tr><tr><td>- int *flag 和 int val: 如果flag为NULL， 那么<code>getopt_long</code>返回本结构中val的值；如果flag不为NULL，那么将flag指向的变量设为val的值，<code>getopt_long</code>返回0.通过flag和val,我们就可以在处理命令行参数的同时自动设置标记变量。</td><td></td><td></td></tr></tbody></table><p>参考文章：<br><a href="http://www.cnblogs.com/oloroso/p/4616282.html" target="_blank" rel="noopener">http://www.cnblogs.com/oloroso/p/4616282.html</a><br><a href="http://www.cppblog.com/flyonok/archive/2010/09/04/125884.aspx" target="_blank" rel="noopener">http://www.cppblog.com/flyonok/archive/2010/09/04/125884.aspx</a><br><a href="https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html" target="_blank" rel="noopener">https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html</a></p>]]></content>
-      
-      
-      <categories>
-          
-          <category> Linux </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> linux </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>LeetCode-String DP</title>
       <link href="/2017/03/26/LeetCode/LeetCode-Dynamic%20Programming/"/>
       <url>/2017/03/26/LeetCode/LeetCode-Dynamic%20Programming/</url>
@@ -734,6 +709,31 @@
         <tags>
             
             <tag> LeetCode </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Linux getopt和getopt_long函数</title>
+      <link href="/2017/03/26/Linux/getopt%20and%20getopt_long/"/>
+      <url>/2017/03/26/Linux/getopt%20and%20getopt_long/</url>
+      
+        <content type="html"><![CDATA[<p>本文讲讲Linux中用来处理命令行参数的函数getopt();  </p><a id="more"></a><h1 id="getopt"><a href="#getopt" class="headerlink" title="getopt"></a>getopt</h1><h2 id="函数参数"><a href="#函数参数" class="headerlink" title="函数参数"></a>函数参数</h2><p>函数原型为: </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int getopt(int argc, char * const argv[], const char *optstring);</span><br></pre></td></tr></table></figure><p>涉及的全局变量：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">extern char *optarg;</span><br><span class="line">extern int optind, opterr, optopt;</span><br></pre></td></tr></table></figure><p>包含的头文件：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br></pre></td></tr></table></figure><p>先说几个概念：  </p><ul><li>选项：指的是命令行参数中的<code>-</code>符号后面的字母，比如-a中a就是选项。</li><li>选项参数，指的是选项后面跟的值，有的选项后面必须有个值，有的选项后面没有值，有的选项后面可能有值。  </li></ul><p>getopt的函数声明中，argc为命令行参数的个数，argv[]为命令行参数列表，optstring为可能出现的选项的列表。<br>optstring:如果一个选项后面带有:，则该选项必须带选项参数。如果一个选项后面带有::,则该选项后面可能带参数。<br>如果一个选项后面可能带参数，那么在命令行中，该选项的参数跟该选项之间不能有空格，如果一个选项后面必须带参数，那么选项和它的参数之间可以有空格。<br>举个例子，比如现在的optarg为abc:d::，那么a和b后面没有参数，c后面必须有参数，d后面可能有参数。我们的命令行参数就可以是</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command -a -b -c cvalue -ddvalue</span><br></pre></td></tr></table></figure><p>注意，d和dvalue之间没有空格。  </p><h2 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h2><ul><li>optarg: 指向当前选项的选项参数（如果有的话）</li><li>optind: 下一个选项的索引。<strong>getopt函数会重排命令行参数</strong>，所以选项都在argv数组的前面，当argv数组处理完毕后，如果optind &gt;= argc, 就说明出现了过多的选项。</li><li>opterr: 将opterr设为0，getopt将不打印错误信息。</li><li>optopt: 当getopt遇到一个未知的选项，或一个选项缺少要求的参数，optopt存储该选项。</li><li>返回值：函数的返回值为当前处理的选项，，如果getopt在optstring中找不到该选项或是缺少选项参数，getopt返回’?’,并且打印错误信息。如果optstring的第一个字母是’:’, 那么当缺少选项参数时，getopt返回’:’而不是’?’。如果不再有可识别的选项，getopt返回-1。</li></ul><h1 id="getopt-long"><a href="#getopt-long" class="headerlink" title="getopt_long"></a>getopt_long</h1><p>getopt_long函数可以处理长选项，就像–help这种，选项长度大于1个字母，需要以–开头。<br>函数声明：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;getopt.h&gt;</span><br><span class="line"></span><br><span class="line">int getopt_long(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex);</span><br></pre></td></tr></table></figure><p>前三个参数和getopt一样，第四个参数longopts指向option结构体数组，struct option定义如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct option&#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    int has_arg;</span><br><span class="line">    int *flag;</span><br><span class="line">    int val;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><ul><li>const char *name: 选项的名字</li><li>int has_arg：选项是否有参数。它的值为以下三种</li></ul><table><thead><tr><th>符号常量</th><th>数值</th><th>含义</th></tr></thead><tbody><tr><td>no_argument</td><td>0</td><td>选项没有参数</td></tr><tr><td>required_argument</td><td>1</td><td>选项需要参数</td></tr><tr><td>optional_argument</td><td>2</td><td>选项参数可选</td></tr><tr><td>- int *flag 和 int val: 如果flag为NULL， 那么<code>getopt_long</code>返回本结构中val的值；如果flag不为NULL，那么将flag指向的变量设为val的值，<code>getopt_long</code>返回0.通过flag和val,我们就可以在处理命令行参数的同时自动设置标记变量。</td><td></td><td></td></tr></tbody></table><p>参考文章：<br><a href="http://www.cnblogs.com/oloroso/p/4616282.html" target="_blank" rel="noopener">http://www.cnblogs.com/oloroso/p/4616282.html</a><br><a href="http://www.cppblog.com/flyonok/archive/2010/09/04/125884.aspx" target="_blank" rel="noopener">http://www.cppblog.com/flyonok/archive/2010/09/04/125884.aspx</a><br><a href="https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html" target="_blank" rel="noopener">https://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Linux </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> linux </tag>
             
         </tags>
       
@@ -794,6 +794,31 @@
     
     
     <entry>
+      <title>在Ubuntu下安装ovs-dpdk</title>
+      <link href="/2017/03/21/Network/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
+      <url>/2017/03/21/Network/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/</url>
+      
+        <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> Network </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ovs-dpdk </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>TCP服务和首部</title>
       <link href="/2017/03/21/Network/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/"/>
       <url>/2017/03/21/Network/TCP%E6%9C%8D%E5%8A%A1%E5%92%8C%E9%A6%96%E9%83%A8/</url>
@@ -815,6 +840,31 @@
             <tag> 服务 </tag>
             
             <tag> 报头 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>“[转]网络编程中IPV4和IPV6互相通信”</title>
+      <link href="/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/"/>
+      <url>/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/</url>
+      
+        <content type="html"><![CDATA[<p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p><a id="more"></a>  <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p><h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li><li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li><li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li><li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li></ol><h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li><li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li><li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li></ol><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p><p>参考资料：<br>《Unix 网络编程》</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Network </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Network Programming </tag>
             
         </tags>
       
@@ -894,56 +944,6 @@
         <tags>
             
             <tag> ovs-dpdk </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>在Ubuntu下安装ovs-dpdk</title>
-      <link href="/2017/03/21/Network/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/"/>
-      <url>/2017/03/21/Network/%E5%9C%A8Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85ovs-dpdk/</url>
-      
-        <content type="html"><![CDATA[<p>在Ubuntu下安装ovs-dpdk以及虚拟机</p><a id="more"></a><h2 id="在Ubuntu下安装ovs-dpdk"><a href="#在Ubuntu下安装ovs-dpdk" class="headerlink" title="在Ubuntu下安装ovs-dpdk"></a>在Ubuntu下安装ovs-dpdk</h2><p>参考资料：<a href="https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu" target="_blank" rel="noopener">https://software.intel.com/zh-cn/articles/using-open-vswitch-with-dpdk-on-ubuntu</a><br>主要是照着这个网站来做</p><h3 id="在Ubuntu下创建虚拟机"><a href="#在Ubuntu下创建虚拟机" class="headerlink" title="在Ubuntu下创建虚拟机"></a>在Ubuntu下创建虚拟机</h3><p>其中的难点也就是这个网站没有讲到的部分是在Ubuntu下创建虚拟机。<br>主要参考了: <a href="https://my.oschina.net/kelvinxupt/blog/265108" target="_blank" rel="noopener">https://my.oschina.net/kelvinxupt/blog/265108</a><br>qemu版本需要2.2以上，所以需要源码安装，不能直接apt-get，基本都是照着网页上做就可以了。</p><h3 id="测试两台虚拟机的连通性"><a href="#测试两台虚拟机的连通性" class="headerlink" title="测试两台虚拟机的连通性"></a>测试两台虚拟机的连通性</h3><p>Fedora的网络配置文件是：/etc/sysconfig/network-scripts/ifcfg-xxx， 其中xxx替换成网卡名称<br>修改文件中的BOOTPROTYPE=static，加上IPADDR 和 NETMASK， 把两台虚拟机的IPADDR设置为同一网段。 可以通过/etc/networks文件查看机器所在的网段。</p><h3 id="两台机器互相PING"><a href="#两台机器互相PING" class="headerlink" title="两台机器互相PING"></a>两台机器互相PING</h3><p>假设第一台虚拟机的IP地址是:169.254.0.35，第二台虚拟机的IP地址是:169.254.0.55.</p><p>  在第一台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i ens3</span><br></pre></td></tr></table></figure><p>在第二台虚拟机上执行命令：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -I ens3 169.254.0.35 -c 5</span><br></pre></td></tr></table></figure>]]></content>
-      
-      
-      <categories>
-          
-          <category> Network </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> ovs-dpdk </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>“[转]网络编程中IPV4和IPV6互相通信”</title>
-      <link href="/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/"/>
-      <url>/2017/03/21/Network/How-IPV4-and-IPV6-communicate-with-each-other/</url>
-      
-        <content type="html"><![CDATA[<p>本文为转载文章，<a href="http://blog.csdn.net/chenhanzhun/article/details/41944195" target="_blank" rel="noopener">原文地址</a>  </p><a id="more"></a>  <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于互联网终端不断增加，IPv4 地址长度（32位）已不能够满足要求，所以出现了 IPv6地址（128位），但是现有应用程序大部分还是采用 IPv4 地址形式，所以必须解决 IPv4 与 IPv6 之间的相互操作，使现有基于 IPv4 的应用程序能够与基于 IPv6 的应用程序相互通信。那么我们怎么实现 IPv4 客户端与 IPv6 服务器、IPv6 客户端与 IPv4 服务器之间的通信。</p><h4 id="IPv4-客户端与-IPv6-服务器"><a href="#IPv4-客户端与-IPv6-服务器" class="headerlink" title="IPv4 客户端与 IPv6 服务器"></a>IPv4 客户端与 IPv6 服务器</h4><p>假设我们主机是运行双栈，即存在 IPv4 协议栈和 IPv6 协议栈，双栈主机上的 IPv6 服务器既能处理 IPv4 客户端，也能处理 IPv6 客户端，因为 IPv4 可以映射成 IPv6 地址。下图是 IPv4 客户端与 IPv6 服务器之间的通信过程：<br><img src="/images/Network/IPv4cli&IPv6serv.png" alt="image"><br>IPv6 服务器程序创建的套接字绑定到 IPv6 通配地址和 TCP 端口号 9999。假设客户端和服务器主机都处于同一个以太网，当左侧两个客户端都发送 SYN 报文段请求与服务器建立连接时，IPv4 客户端主机在一个 IPv4 数据报中载送 SYN，IPv6 客户端主机在一个 IPv6 数据报中载送 SYN。在以太网线上包含以太网首部、IP 首部、TCP 首部以及 TCP 数据，根据以太网首部中包含的类型字段区分 IP 类型是为 IPv4 还是 IPv6，因此 IP 首部中的目的 IP 地址格式根据以太网类型字段分为 IPv4 地址和 IPv6 地址。两者的 TCP 首部是一样的，TCP 首部中包含目的端口号（即 IPv6 服务器的端口号 9999）。<br>服务器的接收数据链路通过查看以太网类型字段把每帧传递给相应的 IP 模块。IPv4 模块结合其上的 TCP 模块检测到 IPv4 数据报的目的端口对应的是一个 IPv6 套接字，于是把该数据报 IPv4 首部中的源 IPv4 地址转换成一个等价的 IPv4 映射的 IPv6 地址。当 accept 系统调用把这个已经接受的 IPv4 客户端连接返回给服务器进程时，这个映射后的地址将作为客户的 IPv6 地址返回给服务器的 IPv6 套接字（也就是说服务器根本不知道自己是在跟 IPv4 客户端通信，客户端也不知道自己和 IPv6 的服务器通信），该连接上其余的数据报都是 IPv4 数据报。对于 IPv6 客户端，当 accept 系统调用把接受的 IPv6 客户端连接返回给服务器进程时，该客户的 IPv6 地址就是原来 IPv6 首部中的源地址，不需要进行映射，该连接上其余的数据报都是 IPv6 数据报。<br>IPv4 的 TCP 客户端与 IPv6 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv6 服务器，创建一个 IPv6 的监听套接字，并且该服务器把通配地址和端口号 9999 绑定到该套接字上；</li><li>IPv4 客户端调用 gethostbyname 函数找到服务器主机的一个 A 记录，服务器同时包含 A 记录和 AAAA 记录，即同时支持 IPv4 和 IPv6，对于 IPv4 客户端来说只需要 A 记录即可；</li><li>IPv4 客户端调用 connect 函数向服务器发出连接请求，即客户端主机向服务器主机发送一个 IPv4 的 SYN 数据报（该 IPv4 的 SYN 中的目的地是 IPv6 套接字）；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，设置一个标志指示本连接应使用 IPv4 映射的 IPv6 地址，并响应一个 IPv4 的SYN 和 ACK 数据报。当该链接建立后，由 accept 函数把这个 IPv4 映射的 IPv6 地址返回给服务器；</li><li>当服务器主机往这个 IPv4 映射的 IPv6 地址发送 TCP 报文段时，其 IP 栈产生目的地址为所映射 IPv4 地址的 IPv4 载送数据报。即客户端和服务器之间所有通信都使用 IPv4 的载送数据报；</li></ol><h4 id="IPv6-客户端与-IPv4-服务器"><a href="#IPv6-客户端与-IPv4-服务器" class="headerlink" title="IPv6 客户端与 IPv4 服务器"></a>IPv6 客户端与 IPv4 服务器</h4><p>IPv6 的 TCP 客户端与 IPv4 的 TCP 服务器之间通信的步骤如下：  </p><ol><li>首先启动 IPv4 服务器，创建一个 IPv4 的监听套接字；</li><li>IPv6 客户端调用 getaddrinfo 函数查找 IPv6 地址；</li><li>IPv6 客户端在作为函数参数的 IPv6 套接字地址结构中设置这个 IPv4 映射的 IPv6 地址后调用 connect 函数向服务器发出连接请求，内核检测到这个映射地址后，自动向服务器主机发送一个 IPv4 的 SYN 数据报；</li><li>服务器主机接收到来自客户端的 IPv4 的 SYN 数据报后，响应一个 IPv4 的SYN 和 ACK 数据报。连接通过使用 IPv4 数据报建立；</li></ol><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>双栈主机上的 IPv6 服务器既能服务于 IPv4 客户，又能服务于 IPv6 客户。IPv4 客户发送给这种服务器的仍然是 IPv4 数据报，不过服务器的协议栈会把客户主机的地址转换成一个 IPv4 映射的 IPv6 地址。类似地，双栈主机上的 IPv6 客户能够与 IPv4 服务器通信，客户的解析器会把服务器主机所有的 A 记录作为 IPv4 映射的 IPv6 地址返回给客户，而客户指定这些地址之一调用 connect 将会使双栈发送一个 IPv4 的 SYN 数据报。为了使套接字编程具有可移植性，在编程实现过程中，尽量避免使用 gethostbyname 和 gethostbyaddr 函数，而应该使用 getaddrinfo 和 getnameinfo 函数。</p><p>参考资料：<br>《Unix 网络编程》</p>]]></content>
-      
-      
-      <categories>
-          
-          <category> Network </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Network Programming </tag>
             
         </tags>
       
