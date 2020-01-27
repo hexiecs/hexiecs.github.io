@@ -396,6 +396,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/22/Network/difference between close() and shutdown() when TCP terminate/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2017/03/22/Network/difference between close() and shutdown() when TCP terminate/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -474,8 +484,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/03/21/Network/TCP连接建立和终止小结/" rel="next" title="TCP连接建立和终止小结">
-                <i class="fa fa-chevron-left"></i> TCP连接建立和终止小结
+              <a href="/2017/03/21/Network/TCP的成块数据流/" rel="next" title="TCP成块数据流">
+                <i class="fa fa-chevron-left"></i> TCP成块数据流
               </a>
             
           </div>
@@ -484,8 +494,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/03/26/LeetCode/LeetCode-Dynamic Programming/" rel="prev" title="LeetCode-String DP">
-                LeetCode-String DP <i class="fa fa-chevron-right"></i>
+              <a href="/2017/03/26/Linux/getopt and getopt_long/" rel="prev" title="Linux getopt和getopt_long函数">
+                Linux getopt和getopt_long函数 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -836,7 +846,27 @@
 
 
 <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+<script src="/js/src/Valine.min.js"></script>
+
+
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: true,
+        appId: 'Ob3jIfHi7cMYAfFztBzvBLuX-gzGzoHsz',
+        appKey: 'OLAv9KPRL4fYTpHmbtIrrXl7',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
 
 
 
