@@ -85,7 +85,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Dynamic Programming Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-01-27T03:23:52.127Z">
+<meta property="og:updated_time" content="2020-01-31T12:57:34.157Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-String DP">
 <meta name="twitter:description" content="The Dynamic Programming Problems in LeetCode">
@@ -451,6 +451,30 @@
 <h3 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h3><p>we can use a dp array to store the result of each number. dp[i] = min(dp[i], dp[i - j ] + 1), where 1 &lt;=i &lt;= n and j is a perfect square number that’s less than i. The time complexity is O(n* sqrt(n)).</p>
 <h2 id="Maximal-Square"><a href="#Maximal-Square" class="headerlink" title="Maximal Square"></a><a href="https://leetcode.com/problems/maximal-square/" target="_blank" rel="noopener">Maximal Square</a></h2><h3 id="Description-2"><a href="#Description-2" class="headerlink" title="Description"></a>Description</h3><p>Given a 2D binary matrix filled with 0’s and 1’s, find the largest square containing only 1’s and return its area.</p>
 <h3 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h3><p>Use dp[i][j] denotes the length of maximal square which lower right corner is located at (i, j). If matrix[i][j] == ‘0’, dp[i][j] = 0. When i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; matrix[i][j] == ‘1’, dp[i][j] = min(dp[i - 1][j - 1], min(dp[i][j-1], dp[i-1][j])) + 1. Otherwise, matrix[i][j] == ‘1’ and it’s located at the top or left edge of the matrix, so the dp[i][j] = 1.</p>
+<h2 id="Best-Time-to-Buy-and-Sell-Stock-with-Cooldown"><a href="#Best-Time-to-Buy-and-Sell-Stock-with-Cooldown" class="headerlink" title="Best Time to Buy and Sell Stock with Cooldown"></a><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/" target="_blank" rel="noopener">Best Time to Buy and Sell Stock with Cooldown</a></h2><h3 id="Description-3"><a href="#Description-3" class="headerlink" title="Description"></a>Description</h3><p>Say you have an array for which the ith element is the price of a given stock on day i.</p>
+<p>Design an algorithm to find the maximum profit. You may complete as many transactions as you like with the following restrictions:</p>
+<ul>
+<li>you may not engage in multiple transactions at the same time (ie. you must sell the stock before you buy it).</li>
+<li>After you sell your stock, you can not buy it on next day.</li>
+</ul>
+<h3 id="Solution-5"><a href="#Solution-5" class="headerlink" title="Solution"></a>Solution</h3><p>Use buy[i] to denote the maximum profit of a sequence end with buy or cooldown.(ie. [buy sell buy] or [buy sell buy cooldown cooldown])</p>
+<p>Use sell[i] to denote the maximum profit of a sequence end with sell or cooldown. (ie. [buy sell] or [buy sell cooldown])</p>
+<p>So the transition function is:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">buy[i] = max(sell[i-2] - price, buy[i-1])</span><br><span class="line">sell[i] = max(buy[i-1] + price, sell[i-1])</span><br></pre></td></tr></table></figure>
+
+<p>The first transition means:</p>
+<ol>
+<li>If we buy the stock on day i then the maximum  profit is sell[i - 2] - price because we have to sell before we buy it and we have to cooldown at least one day.</li>
+<li>If we don’t buy the stock, the maximum profit is the buy[i-1]. </li>
+</ol>
+<p>So buy[i] is the maximum one of them.</p>
+<p>The second transition’s idea is similar.</p>
+<h2 id="Burst-Balloons"><a href="#Burst-Balloons" class="headerlink" title="Burst Balloons"></a><a href="https://leetcode.com/problems/burst-balloons/" target="_blank" rel="noopener">Burst Balloons</a></h2><h3 id="Description-4"><a href="#Description-4" class="headerlink" title="Description"></a>Description</h3><p>Given n bollons, indexed from 0 to n - 1. Each ballon is painted with a number on it represented by array nums. You are asked to burst all of them. If you burst ballon i, you will get nums[left] * nums[i] * nums[right] coins. Here left and right are the adjacent indices of i. After the burst, the left and right then become adjacent ballons.</p>
+<p>Find the maximum coins you can get by bursting the ballons wisely.</p>
+<h3 id="Solution-6"><a href="#Solution-6" class="headerlink" title="Solution"></a>Solution</h3><p>Let dp[i][j] be the maximum coins we can get by bursting ballons between i to j (exclusively). We add nums[0] = nums[n] = 1 as boundary of the array. So the final answer is dp[0][n].</p>
+<p>If we consider the transition by burst order, it’s hard to find a function because the left and right of the bursted ballon will become adjacent so we cannot simply divide the problem into sub problems. Let’s think reversely. If we consider the last ballon we burst, then its left and right is definite – the i and j. Since it’s the last ballon to burst, the left and right of it have been bursted, so the transition function is:</p>
+<p>dp[i][j] = max(dp[i][j], dp[i][k] + nums[left] * nums[k] * nums[right] + dp[k][j]);</p>
+<p>We can use memorization search or dynamic programming to solve this problem. As for dp, we should calculate the dp with smaller interval length first as it will be used later, so we iterate the interval length from 3 to n as the outside loop. Then we iterate the indices, and for each indices, we iterate the possible last burst element in the intervals. So the time complexity is O(n^3).</p>
 
       
     </div>
@@ -593,7 +617,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-count">38</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -615,7 +639,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">38</span>
+                  <span class="site-state-item-count">39</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -677,7 +701,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Odd-Even-Jump"><span class="nav-number">3.</span> <span class="nav-text">Odd Even Jump</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Perfect-Squares"><span class="nav-number">4.</span> <span class="nav-text">Perfect Squares</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">4.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-3"><span class="nav-number">4.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Maximal-Square"><span class="nav-number">5.</span> <span class="nav-text">Maximal Square</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">5.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-4"><span class="nav-number">5.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break"><span class="nav-number">1.</span> <span class="nav-text">Word Break</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description"><span class="nav-number">1.1.</span> <span class="nav-text">Brief Description:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Word-Break-II"><span class="nav-number">2.</span> <span class="nav-text">Word Break II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Brief-Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Brief Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Odd-Even-Jump"><span class="nav-number">3.</span> <span class="nav-text">Odd Even Jump</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">3.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-2"><span class="nav-number">3.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Perfect-Squares"><span class="nav-number">4.</span> <span class="nav-text">Perfect Squares</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">4.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-3"><span class="nav-number">4.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Maximal-Square"><span class="nav-number">5.</span> <span class="nav-text">Maximal Square</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-2"><span class="nav-number">5.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-4"><span class="nav-number">5.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Best-Time-to-Buy-and-Sell-Stock-with-Cooldown"><span class="nav-number">6.</span> <span class="nav-text">Best Time to Buy and Sell Stock with Cooldown</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-3"><span class="nav-number">6.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-5"><span class="nav-number">6.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Burst-Balloons"><span class="nav-number">7.</span> <span class="nav-text">Burst Balloons</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-4"><span class="nav-number">7.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-6"><span class="nav-number">7.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>
