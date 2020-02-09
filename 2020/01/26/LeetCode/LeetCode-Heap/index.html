@@ -85,7 +85,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Heap Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-01-26T08:12:43.222Z">
+<meta property="og:updated_time" content="2020-02-04T05:21:08.482Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Heap">
 <meta name="twitter:description" content="The Heap Problems in LeetCode">
@@ -436,6 +436,8 @@
 <li>If the two heaps are of different size, which means the smaller one’s size is larger than the larger one by one. So we want the new integer to be added to the larger heap. If the integer is larger than the largest value of the smaller heap, it can be safely added to the larger heap, otherwise the largerst value of the smaller heap should be poped out from the smaller heap to the larger heap and the new integer should be added to the smaller heap.</li>
 </ul>
 <p>Having the above two heaps, we can easily get the median at any time. If the smaller heap’s size is equal to the larger heap, we use the mean of their top value, otherwise we use the top of the smaller heap.</p>
+<h2 id="Top-K-Frequent-Elements"><a href="#Top-K-Frequent-Elements" class="headerlink" title="Top K Frequent Elements"></a><a href="https://leetcode.com/problems/top-k-frequent-elements/" target="_blank" rel="noopener">Top K Frequent Elements</a></h2><h3 id="Description-1"><a href="#Description-1" class="headerlink" title="Description"></a>Description</h3><p>Given an array of integers, return k most frequent integers.</p>
+<h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>We can relate this to the k largest number problem, which is solved by priority queue. But numbers should be sorted by frequency in this problem. So we use a map to calculate each number’s frequency, and construct the priority using the map. The compare function of the priority queue is to compare by frequency. The priority heap is a min-heap used to save the largest k elements and whenever its size is larger than k we can pop the top one since it’s the smallest among all.</p>
 
       
     </div>
@@ -496,7 +498,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2020/01/29/LeetCode-Search/" rel="prev" title="LeetCode-Search">
+              <a href="/2020/01/29/LeetCode/LeetCode-Search/" rel="prev" title="LeetCode-Search">
                 LeetCode-Search <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -664,7 +666,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Find-Median-from-Data-Stream"><span class="nav-number">1.</span> <span class="nav-text">Find Median from Data Stream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Find-Median-from-Data-Stream"><span class="nav-number">1.</span> <span class="nav-text">Find Median from Data Stream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Top-K-Frequent-Elements"><span class="nav-number">2.</span> <span class="nav-text">Top K Frequent Elements</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>
