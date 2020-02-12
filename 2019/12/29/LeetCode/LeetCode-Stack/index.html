@@ -85,7 +85,7 @@
 <meta property="og:site_name" content="何谐写字的地方">
 <meta property="og:description" content="The Stack Problems in LeetCode">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-31T00:32:03.000Z">
+<meta property="og:updated_time" content="2020-02-12T13:43:21.839Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode-Stack">
 <meta name="twitter:description" content="The Stack Problems in LeetCode">
@@ -426,6 +426,8 @@
 
 <h2 id="Basic-Calculator"><a href="#Basic-Calculator" class="headerlink" title="Basic Calculator"></a><a href="https://leetcode.com/problems/basic-calculator/" target="_blank" rel="noopener">Basic Calculator</a></h2><h3 id="Description"><a href="#Description" class="headerlink" title="Description"></a>Description</h3><p>Given a string of non-negative numbers, ‘+’, ‘-‘ and parentheses, calculate its value. You can assume the expression is valid.</p>
 <h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>Since there are parentheses in the expression, we usually need a stack to implement it. When we encounter a ‘(‘, we push numbers or operators onto stack, and pop them when we encounter a ‘)’. When we calculate numbers inside a pair of parentheses, it is easy to iterate from left to right and process the sign of each number and finally get the value. However, after we complete the value of a pair of parentheses expression, the sign of the value is non obvious. Take the expression ‘1 - (2 - 3)’ for example, when we get the result of (2 - 3), how can we know it’s negtive or positive? So there must be somewhere we store the minus sign in this example. We may notice that the minus sign is used after the parentheses expression is finished, which is at the same time as the number 1. The key idea is that we should save the sign and current calculated numbers in stacks when we encounter a left ‘(‘ which means we need to calculate another ‘current value’ so the existed current value need to be saved right now and be poped when the another value is finished.</p>
+<h2 id="Daily-Temperatures"><a href="#Daily-Temperatures" class="headerlink" title="Daily Temperatures"></a><a href="https://leetcode.com/problems/daily-temperatures/" target="_blank" rel="noopener">Daily Temperatures</a></h2><h3 id="Description-1"><a href="#Description-1" class="headerlink" title="Description"></a>Description</h3><p>Given an integer array, for each integer find the first right side integer larger than it.</p>
+<h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>Use a monotonous stack which maintains the smallest integers on the top. For each integer, we compare it with the top of the stack. If the integer is less, we push it to the stack. Otherwise, we pop the top of the stack until there is some integer larger than the integer. For each poped out integer, the current compared integer is exactly the first larger integer on the right side.</p>
 
       
     </div>
@@ -654,7 +656,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Basic-Calculator"><span class="nav-number">1.</span> <span class="nav-text">Basic Calculator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Basic-Calculator"><span class="nav-number">1.</span> <span class="nav-text">Basic Calculator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description"><span class="nav-number">1.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">1.2.</span> <span class="nav-text">Solution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Daily-Temperatures"><span class="nav-number">2.</span> <span class="nav-text">Daily Temperatures</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Description-1"><span class="nav-number">2.1.</span> <span class="nav-text">Description</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution-1"><span class="nav-number">2.2.</span> <span class="nav-text">Solution</span></a></li></ol></li></ol></div>
             
 
           </div>
